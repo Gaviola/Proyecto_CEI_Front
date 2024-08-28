@@ -1,7 +1,18 @@
+import UsersTable from "../components/usersTable";
+
 export default function UsersPage() {
   return (
     <main className="h-screen">
-      <h1>Usuarios</h1>
+      <UsersTable  
+        users={[
+          {
+            name: "Gabriel",
+            lastname: "Garcia",
+            email: "ads",
+            dni: "12345678"
+          },
+        ]}
+      /> 
     </main>
   );
 }
