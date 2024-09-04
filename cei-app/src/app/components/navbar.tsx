@@ -81,11 +81,11 @@ export default function Navbar() {
           }`}
           onClick={() => handleOptionClick("Prestamos")}
         >
-          <a href="#">
+          <a href="/loans">
             <MdOutlineShoppingCart className="size-8" />
           </a>
           <a
-            href="#"
+            href="/loans"
             className={
               isOpen
                 ? "block transform translate-x-0 duration-500"
