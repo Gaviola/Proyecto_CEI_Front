@@ -45,38 +45,7 @@ export default function UsersPage() {
 
 
       <UsersTable  
-        users={[
-          {
-            name: "Gabriel",
-            lastname: "Garcia",
-            email: "gabriel.garcia@gmail.com",
-            idNumber: "12345678"
-          },
-          {
-            name: "Pepe",
-            lastname: "Garcia",
-            email: "pepito.garcia@gmail.com",
-            idNumber: "1234568"
-          },
-          {
-            name: "Pepe",
-            lastname: "Garcia",
-            email: "pepito.garcia@gmail.com",
-            idNumber: "1234568"
-          },
-          {
-            name: "Pepe",
-            lastname: "Garcia",
-            email: "pepito.garcia@gmail.com",
-            idNumber: "1234568"
-          },
-          {
-            name: "Pepe",
-            lastname: "Garcia",
-            email: "pepito.garcia@gmail.com",
-            idNumber: "1234568"
-          },
-        ]}
+        users={users}
       /> 
     </main>
   );
