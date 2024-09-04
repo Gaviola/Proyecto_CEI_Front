@@ -1,6 +1,35 @@
 import UsersTable from "../components/usersTable";
+import { useEffect, useState } from "react";
+
+
+interface User {
+  id: number;
+  name: string;
+  lastName: string;
+  idNumber: string;
+  registrationDate: string;
+  email: string;
+}
 
 export default function UsersPage() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchUsers() {
+      const res = await fetch("http://localhost:3000/api/usuarios");
+      const data = await res.json();
+      setUsers(data.users);
+      setLoading(false);
+    }
+
+    fetchUsers();
+  }, []);
+
+  if (loading) {
+    return <div>Cargando...</div>;
+  }
+
   return (
     <main  style={{padding: "10px"}}>
       <h1 className="text-2xl font-bold text-gray-900 m-2">
