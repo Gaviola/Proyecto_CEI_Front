@@ -6,7 +6,7 @@ import Navbar from "./navbar";
 
 export default function Header() {
   return (
-    <header className="flex items-center justify-between p-4  bg-[#84BC3C]">
+    <header className="flex items-center justify-between p-4  bg-[#84BC3C] shadow-md">
       <Image
         src="/Sinergia logo 1.svg"
         alt="Sinergia logo"
@@ -14,8 +14,6 @@ export default function Header() {
         height={60}
         className=""
       />
-
-      <Navbar />
 
       <DropdownOptions />
     </header>
