@@ -1,6 +1,6 @@
+"use client";
 import UsersTable from "../components/usersTable";
 import { useEffect, useState } from "react";
-
 
 interface User {
   id: number;
@@ -31,7 +31,7 @@ export default function UsersPage() {
   }
 
   return (
-    <main  style={{padding: "10px"}}>
+    <main  className="py-5 px-7 w-full">
       <h1 className="text-2xl font-bold text-gray-900 m-2">
         Usuarios
       </h1>
@@ -46,7 +46,7 @@ export default function UsersPage() {
 
       <UsersTable  
         users={users}
-      /> 
+      />  
     </main>
   );
 }
