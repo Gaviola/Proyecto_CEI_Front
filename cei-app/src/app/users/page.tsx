@@ -1,12 +1,12 @@
 "use client";
-
+import UsersTable from "../components/usersTable";
 import { useEffect, useState } from "react";
 
 interface User {
   id: number;
-  firstName: string;
+  name: string;
   lastName: string;
-  dni: string;
+  idNumber: string;
   registrationDate: string;
   email: string;
 }
@@ -31,22 +31,22 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="m-10">
-      <h1 className="text-4xl font-bold">Administración de Usuarios</h1>
-      <div className="flex flex-row text-gray-600 mt-4">
-        <h2 className="text-xl font-bold w-28">Nombre</h2>
-        <h2 className="text-xl font-bold">Apellido</h2>
-      </div>
-      <ul>
-        {users.map((user) => (
-          <li key={user.id}>
-            <div className="flex flex-row">
-              <div className="w-28">{user.firstName}</div>
-              <div>{user.lastName}</div>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <main  className="py-5 px-7 w-full">
+      <h1 className="text-2xl font-bold text-gray-900 m-2">
+        Usuarios
+      </h1>
+
+      {/* TODO: Fetch users from API */}
+      {/* TODO: Search bar */}
+      {/* TODO: Pagination */}
+      {/* TODO: Modal to create new user */}
+      {/* TODO: Modal to see user details */}
+      {/* TODO: Add filter of user type */}
+
+
+      <UsersTable  
+        users={users}
+      />  
+    </main>
   );
 }
