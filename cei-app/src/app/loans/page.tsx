@@ -66,7 +66,7 @@ export default function LoansPage() {
   }, []);
 
   return (
-    <div className="m-10 overflow-scroll">
+    <div className="m-10  overflow-scroll">
       <h1 className="text-4xl font-bold py-4">Préstamos</h1>
       <h2 className="pb-4 text-gray-600">Estás en la vista de Administrador</h2>
       <Table

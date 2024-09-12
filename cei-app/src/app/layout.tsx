@@ -18,14 +18,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className} max-h-screen overflow-hidden`}>
         {<Header />}
         <div className="flex flex-row">
           {<Navbar />}
           {children}
         </div>
-        
-
       </body>
     </html>
   );
