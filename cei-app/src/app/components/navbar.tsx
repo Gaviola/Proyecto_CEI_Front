@@ -6,7 +6,7 @@ import { MdOutlineInventory, MdOutlineShoppingCart } from "react-icons/md";
 
 export default function Navbar() {
   const optionStyle =
-    "relative font-bold p-6 transform hover:translate-x-4 hover:bg-background-100 active:bg-background-200  duration-500 group-focus:text-red text-black flex flex-row justify-center items-center gap-4 rounded-lg";
+    "relative font-bold p-6 transform hover:translate-x-4 hover:bg-background-200 active:bg-background-100  duration-500 group-focus:text-red text-black flex flex-row justify-center items-center gap-4 rounded-lg";
 
   const [selectedOption, setSelectedOption] = useState("Usuarios");
 
@@ -22,7 +22,7 @@ export default function Navbar() {
     <nav
       className={`${
         isOpen ? "" : "w-min"
-      } relative h-screen bg-background-200 bg-opacity-40 shadow-2xl`}
+      } relative h-screen bg-white bg-opacity-50 shadow-xl`}
     >
       <ul className="flex flex-col justify-center text-white duration-500">
         <button
@@ -81,11 +81,11 @@ export default function Navbar() {
           }`}
           onClick={() => handleOptionClick("Prestamos")}
         >
-          <a href="#">
+          <a href="/loans">
             <MdOutlineShoppingCart className="size-8" />
           </a>
           <a
-            href="#"
+            href="/loans"
             className={
               isOpen
                 ? "block transform translate-x-0 duration-500"

@@ -21,7 +21,7 @@ const config: Config = {
         },
         background: {
           100: "#FEF7FF",
-          200: "#CAC4D0"
+          200: "#E2D7ED"
         }
       }
     },
