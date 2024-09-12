@@ -9,203 +9,29 @@ import {
   TableCell,
   getKeyValue,
 } from "@nextui-org/table";
-
 import React from "react";
-
 import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
-
 import { useAsyncList } from "@react-stately/data";
-
 import { Spinner } from "@nextui-org/spinner";
+import { useState, useEffect } from "react";
 
-const rows = [
-  {
-    id: 1,
-    deliveryDate: "2021-01-01",
-    deliveryResponsible: "Nombre, Apellido",
-    borrowerName: "Apellido, Nombre",
-    fileNumber: "123456",
-    cellphone: "1234567890",
-    borrowedItem: "Elemento",
-    clarification: "Aclaración",
-    term: 7,
-    returnDate: "2021-01-08",
-    receptionResponsible: "Nombre, Apellido",
-    amount: 100,
-    paymentMethod: "Efectivo",
-    observation: "Observación",
-  },
+type Loan = {
+  id: number;
+  deliveryDate: string;
+  deliveryResponsible: string;
+  borrowerName: string;
+  fileNumber: string;
+  cellphone: string;
+  borrowedItem: string;
+  clarification: string;
+  term: number;
+  returnDate: string;
+  receptionResponsible: string;
+  amount: number;
+  paymentMethod: string;
+  observation: string;
+};
 
-  {
-    id: 2,
-    deliveryDate: "2021-01-01",
-    deliveryResponsible: "Nombre, Apellido",
-    borrowerName: "Apellido, Nombre",
-    fileNumber: "123456",
-    cellphone: "1234567890",
-    borrowedItem: "Elemento",
-    clarification: "Aclaración",
-    term: 7,
-    returnDate: "2021-01-08",
-    receptionResponsible: "Nombre, Apellido",
-    amount: 100,
-    paymentMethod: "Efectivo",
-    observation: "Observación",
-  },
-
-  {
-    id: 3,
-    deliveryDate: "2021-01-01",
-    deliveryResponsible: "Nombre, Apellido",
-    borrowerName: "Apellido, Nombre",
-    fileNumber: "123456",
-    cellphone: "1234567890",
-    borrowedItem: "Elemento",
-    clarification: "Aclaración",
-    term: 7,
-    returnDate: "2021-01-08",
-    receptionResponsible: "Nombre, Apellido",
-    amount: 100,
-    paymentMethod: "Efectivo",
-    observation: "Observación",
-  },
-
-  {
-    id: 4,
-    deliveryDate: "2021-01-01",
-    deliveryResponsible: "Nombre, Apellido",
-    borrowerName: "Apellido, Nombre",
-    fileNumber: "123456",
-    cellphone: "1234567890",
-    borrowedItem: "Elemento",
-    clarification: "Aclaración",
-    term: 7,
-    returnDate: "2021-01-08",
-    receptionResponsible: "Nombre, Apellido",
-    amount: 100,
-    paymentMethod: "Efectivo",
-    observation: "Observación",
-  },
-
-  {
-    id: 5,
-    deliveryDate: "2021-01-01",
-    deliveryResponsible: "Nombre, Apellido",
-    borrowerName: "Apellido, Nombre",
-    fileNumber: "123456",
-    cellphone: "1234567890",
-    borrowedItem: "Elemento",
-    clarification: "Aclaración",
-    term: 7,
-    returnDate: "2021-01-08",
-    receptionResponsible: "Nombre, Apellido",
-    amount: 100,
-    paymentMethod: "Efectivo",
-    observation: "Observación",
-  },
-
-  {
-    id: 6,
-    deliveryDate: "2021-01-01",
-    deliveryResponsible: "Nombre, Apellido",
-    borrowerName: "Apellido, Nombre",
-    fileNumber: "123456",
-    cellphone: "1234567890",
-    borrowedItem: "Elemento",
-    clarification: "Aclaración",
-    term: 7,
-    returnDate: "2021-01-08",
-    receptionResponsible: "Nombre, Apellido",
-    amount: 100,
-    paymentMethod: "Efectivo",
-    observation: "Observación",
-  },
-
-  {
-    id: 7,
-    deliveryDate: "2021-01-01",
-    deliveryResponsible: "Nombre, Apellido",
-    borrowerName: "Apellido, Nombre",
-    fileNumber: "123456",
-    cellphone: "1234567890",
-    borrowedItem: "Elemento",
-    clarification: "Aclaración",
-    term: 7,
-    returnDate: "2021-01-08",
-    receptionResponsible: "Nombre, Apellido",
-    amount: 100,
-    paymentMethod: "Efectivo",
-    observation: "Observación",
-  },
-
-  {
-    id: 8,
-    deliveryDate: "2021-01-01",
-    deliveryResponsible: "Nombre, Apellido",
-    borrowerName: "Apellido, Nombre",
-    fileNumber: "123456",
-    cellphone: "1234567890",
-    borrowedItem: "Elemento",
-    clarification: "Aclaración",
-    term: 7,
-    returnDate: "2021-01-08",
-    receptionResponsible: "Nombre, Apellido",
-    amount: 100,
-    paymentMethod: "Efectivo",
-    observation: "Observación",
-  },
-
-  {
-    id: 9,
-    deliveryDate: "2021-01-01",
-    deliveryResponsible: "Nombre, Apellido",
-    borrowerName: "Apellido, Nombre",
-    fileNumber: "123456",
-    cellphone: "1234567890",
-    borrowedItem: "Elemento",
-    clarification: "Aclaración",
-    term: 7,
-    returnDate: "2021-01-08",
-    receptionResponsible: "Nombre, Apellido",
-    amount: 100,
-    paymentMethod: "Efectivo",
-    observation: "Observación",
-  },
-
-  {
-    id: 10,
-    deliveryDate: "2021-01-01",
-    deliveryResponsible: "Nombre, Apellido",
-    borrowerName: "Apellido, Nombre",
-    fileNumber: "123456",
-    cellphone: "1234567890",
-    borrowedItem: "Elemento",
-    clarification: "Aclaración",
-    term: 7,
-    returnDate: "2021-01-08",
-    receptionResponsible: "Nombre, Apellido",
-    amount: 100,
-    paymentMethod: "Efectivo",
-    observation: "Observación",
-  },
-
-  {
-    id: 11,
-    deliveryDate: "2021-01-01",
-    deliveryResponsible: "Nombre, Apellido",
-    borrowerName: "Apellido, Nombre",
-    fileNumber: "123456",
-    cellphone: "1234567890",
-    borrowedItem: "Elemento",
-    clarification: "Aclaración",
-    term: 7,
-    returnDate: "2021-01-08",
-    receptionResponsible: "Nombre, Apellido",
-    amount: 100,
-    paymentMethod: "Efectivo",
-    observation: "Observación",
-  },
-];
 
 const columns = [
   { key: "id", label: "ID" },
@@ -225,49 +51,30 @@ const columns = [
 ];
 
 export default function LoansPage() {
+  const [loans, setLoans] = useState<Loan []> ([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [hasMore, setHasMore] = React.useState(false);
 
-  let list = useAsyncList({
-    async load({ signal, cursor }) {
-      if (cursor) {
-        setIsLoading(false);
-      }
 
-      // If no cursor is available, then we're loading the first page.
-      // Otherwise, the cursor is the next URL to load, as returned from the previous page.
-      const res = await fetch(
-        cursor || "https://swapi.py4e.com/api/people/?search=",
-        { signal }
-      );
-      let json = await res.json();
+  useEffect( () => {
+    async function fetchLoans(){
+      const res = await fetch("http://localhost:3000/api/loans");
+      const data = await res.json();
+      setLoans(data.loans);
+      setIsLoading(false);
+    }
 
-      setHasMore(json.next !== null);
+    fetchLoans();
+  }, []);
 
-      return {
-        items: json.results,
-        cursor: json.next,
-      };
-    },
-  });
+  
 
-  const [loaderRef, scrollerRef] = useInfiniteScroll({
-    hasMore,
-    onLoadMore: list.loadMore,
-  });
 
   return (
     <Table
+      aria-label="Loans Table"
       removeWrapper
       isHeaderSticky
-      baseRef={scrollerRef}
-      bottomContent={
-        hasMore ? (
-          <div className="flex w-full justify-center">
-            <Spinner ref={loaderRef} color="white" />
-          </div>
-        ) : null
-      }
       classNames={{
         base: "max-h-[80vh] overflow-scroll m-10 p-4 bg-white rounded-xl shadow-lg",
         table: "min-h-[400px]",
@@ -280,9 +87,9 @@ export default function LoansPage() {
         {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
       </TableHeader>
       <TableBody
-        items={rows}
+        items={loans}
         isLoading={isLoading}
-        loadingContent={<Spinner color="white" />}
+        loadingContent={<Spinner color="current" />}
       >
         {(item) => (
           <TableRow key={item.id} >
