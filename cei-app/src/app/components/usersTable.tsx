@@ -1,5 +1,3 @@
-'use client';
-
 export default function UsersTable({users}: {users: any[]}) {
   return (
     <div className="w-full border-1 px-4 py-1 rounded-lg bg-white">
