@@ -1,6 +1,9 @@
 "use client";
 import UsersTable from "../components/usersTable";
 import { useEffect, useState } from "react";
+import { debounce } from "lodash";
+import { Input } from "postcss";
+import InputSearcher  from "../components/inputSearcher";
 
 interface User {
   id: number;
@@ -14,21 +17,20 @@ interface User {
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchContent, setSearchContent] = useState("");
 
   useEffect(() => {
-    async function fetchUsers() {
-      const res = await fetch("http://localhost:3000/api/users");
+    async function fetchUsers(searchContent: string) {
+      debounce(() => setLoading(true), 100)
+      const res = await fetch("http://localhost:3000/api/users?content=" + searchContent);
       const data = await res.json();
       setUsers(data.users);
       setLoading(false);
     }
+  
+    fetchUsers(searchContent);
+  }, [searchContent]);  
 
-    fetchUsers();
-  }, []);
-
-  if (loading) {
-    return <div>Cargando...</div>;
-  }
 
   return (
     <main  className="py-5 px-7 w-full">
@@ -43,10 +45,25 @@ export default function UsersPage() {
       {/* TODO: Modal to see user details */}
       {/* TODO: Add filter of user type */}
 
+      {/* Imput for search */}
+      <InputSearcher 
+        onChange={debounce(setSearchContent, 300)} 
+        onEnter={setSearchContent} 
+        placeholder="Buscar usuario" 
+        />
 
-      <UsersTable  
-        users={users}
-      />  
+      {
+        loading ? (
+          <div className="flex justify-center items-center">
+            <div className="w-10 h-10">
+              <div> Cargando</div>
+            </div>
+          </div>
+        ) : (
+          <UsersTable users={users} />
+        )
+      }
+       
     </main>
   );
 }
