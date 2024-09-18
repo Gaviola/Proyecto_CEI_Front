@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     // Aquí puedes obtener los datos de los usuarios desde una base de datos o cualquier otra fuente
-    let users = [
+    const users = [
       {
         name: "Gabriel",
         lastname: "Garcia",
@@ -35,11 +35,6 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         idNumber: "1234568"
       },
     ];
-
-    let searchContent = req.query.content as string;
-    if (searchContent) {
-      users = users.filter((user) => user.name.toLowerCase().includes(searchContent) );
-    }
 
     res.status(200).json({ users });
   } else {
