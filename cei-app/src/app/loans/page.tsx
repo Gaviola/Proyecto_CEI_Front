@@ -14,6 +14,7 @@ import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
 import { useAsyncList } from "@react-stately/data";
 import { Spinner } from "@nextui-org/spinner";
 import { useState, useEffect } from "react";
+import Pagination from "../components/pagination";
 
 type Loan = {
   id: number;
@@ -52,7 +53,8 @@ const columns = [
 export default function LoansPage() {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [hasMore, setHasMore] = React.useState(false);
+  const [page, setPage] = React.useState(1);
+  const rowsPerPage = 10;
 
   useEffect(() => {
     async function fetchLoans() {
@@ -65,19 +67,32 @@ export default function LoansPage() {
     fetchLoans();
   }, []);
 
+  const pages = Math.ceil(loans.length / rowsPerPage);
+
+  const items = React.useMemo(() => {
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+
+    return loans.slice(start, end);
+  }, [page, loans]);
+
+  
+
   return (
-    <div className="m-10  overflow-scroll">
+    <div className="sm:m-10 m-5 h-screen overflow-x-hidden">
       <h1 className="text-4xl font-bold py-4">Préstamos</h1>
       <h2 className="pb-4 text-gray-600">Estás en la vista de Administrador</h2>
       <Table
         aria-label="Loans Table"
         removeWrapper
         isHeaderSticky
+     
         classNames={{
-          base: "max-h-[80vh] overflow-scroll p-4 bg-white rounded-xl shadow-lg",
-          table: "min-h-[400px]",
+          wrapper: "",
+          base: " p-4 bg-white rounded-xl shadow-lg sm:h-[60vh] h-[50vh] overflow-x-scroll overflow-y-scroll",
+          table: "h-full w-full",
           tbody: "divide-y divide-gray-200",
-          tr: "hover:bg-gray-50",
+          tr: "hover:bg-gray-50 ",
         }}
       >
         <TableHeader columns={columns}>
@@ -86,7 +101,7 @@ export default function LoansPage() {
           )}
         </TableHeader>
         <TableBody
-          items={loans}
+          items={items}
           isLoading={isLoading}
           loadingContent={<Spinner color="current" />}
         >
@@ -99,6 +114,13 @@ export default function LoansPage() {
           )}
         </TableBody>
       </Table>
+      <div className="flex w-full justify-center sticky h-auto">
+            <Pagination
+              currentPage={page}
+              totalPages={pages}
+              onPageChange={(newPage) => setPage(newPage)}
+            />
+          </div>
     </div>
   );
 }
