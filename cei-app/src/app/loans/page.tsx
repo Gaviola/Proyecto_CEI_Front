@@ -38,18 +38,18 @@ export type Loan = {
 
 const columns = [
   { key: "id", label: "ID" },
-  { key: "deliveryDate", label: "Fecha de entrega" },
-  { key: "deliveryResponsible", label: "Responsable de entrega" },
   { key: "borrowerName", label: "Nombre Alumno/Prestatario" },
   { key: "fileNumber", label: "Legajo" },
   { key: "cellphone", label: "Celular" },
   { key: "borrowedItem", label: "Elemento prestado" },
   { key: "clarification", label: "Aclaración" },
   { key: "term", label: "Plazo (días)" },
+  { key: "deliveryDate", label: "Fecha de entrega" },
   { key: "returnDate", label: "Fecha de devolución" },
-  { key: "receptionResponsible", label: "Responsable de recepción" },
   { key: "amount", label: "Monto ($)" },
   { key: "paymentMethod", label: "Método de pago" },
+  { key: "deliveryResponsible", label: "Responsable de entrega" },
+  { key: "receptionResponsible", label: "Responsable de recepción" },
   { key: "observation", label: "Observación" },
 ];
 
@@ -113,7 +113,7 @@ export default function LoansPage() {
     <div className="sm:m-10 m-5 h-screen overflow-x-hidden">
       <h1 className="text-4xl font-bold py-4">Préstamos</h1>
       <div className="flex flex-row">
-        <LoanModal loan={selectedLoan} />
+        <LoanModal loan={selectedLoan} loans={loans} setLoans={setLoans}  />
       </div>
       <Table
         aria-label="Loans Table"

@@ -11,7 +11,15 @@ import { Input } from "@nextui-org/input";
 import { useEffect, useState } from "react";
 import { Loan } from "../loans/page";
 
-export default function LoanModal({ loan }: { loan: Loan | null }) {
+export default function LoanModal({
+  loan,
+  loans,
+  setLoans,
+}: {
+  loan: Loan | null;
+  loans: Loan[];
+  setLoans: (loans: Loan[]) => void;
+}) {
   const [formData, setFormData] = useState<Loan>({
     id: loan?.id || 0,
     deliveryDate: loan?.deliveryDate || "",
@@ -29,7 +37,7 @@ export default function LoanModal({ loan }: { loan: Loan | null }) {
     observation: loan?.observation || "",
   });
 
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
 
   const onPressNewLoan = () => {
     setFormData({
@@ -57,11 +65,44 @@ export default function LoanModal({ loan }: { loan: Loan | null }) {
     }
   }, [loan]);
 
-  //   const handleSubmit = () => {
-  //     // Envía la solicitud para agregar o modificar el préstamo
-  //     console.log("Préstamo guardado:", formData);
-  //     onClose(); // Cierra el modal
-  //   };
+  const handleSaveLoan = () => {
+    // Si el ID es 0, es un nuevo préstamo
+    if (formData.id === 0) {
+      // Asigna un nuevo ID, asumiendo que los IDs son números consecutivos
+      const newId = loans.length > 0 ? loans[loans.length - 1].id + 1 : 1;
+      const newLoan = { ...formData, id: newId };
+      setLoans([...loans, newLoan]);
+    } else {
+      // Actualiza el préstamo existente
+      const updatedLoans = loans.map((l) =>
+        l.id === formData.id ? formData : l
+      );
+      setLoans(updatedLoans);
+    }
+    // Cierra el modal
+    onClose();
+  };
+
+  // Función para guardar un préstamo en la base de datos
+  const saveLoan = async (loanData: Loan) => {
+    try {
+      const response = await fetch('/api/loans', {
+        method: loanData.id ? 'PUT' : 'POST', // PUT para modificar, POST para nuevo
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(loanData),
+      });
+      if (!response.ok) {
+        throw new Error('Error al guardar el préstamo');
+      }
+      // Manejar la respuesta (actualizar la UI o notificar éxito)
+      console.log("Préstamo guardado con éxito");
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  
 
   return (
     <>
@@ -188,7 +229,7 @@ export default function LoanModal({ loan }: { loan: Loan | null }) {
                 />
               </ModalBody>
               <ModalFooter>
-                <Button onPress={onClose}>Guardar</Button>
+                <Button onPress={handleSaveLoan}>Guardar</Button>
                 <Button color="danger" variant="flat" onPress={onClose}>
                   Cerrar
                 </Button>
