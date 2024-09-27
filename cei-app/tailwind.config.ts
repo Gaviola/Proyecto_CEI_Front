@@ -6,7 +6,7 @@ const config: Config = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./node_modules/@nextui-org/theme/dist/components/(avatar|button|dropdown|ripple|spinner|menu|divider|popover).js"
+    "./node_modules/@nextui-org/theme/dist/components/(avatar|button|dropdown|ripple|spinner|menu|divider|popover|modal|table|pagination|input).js"
   ],
   theme: {
     extend: {
@@ -17,6 +17,7 @@ const config: Config = {
       },
       colors: {
         primaryGreen: {
+          100: "#B6E17F",
           500: "#84BC3C"
         },
         background: {
@@ -26,6 +27,19 @@ const config: Config = {
       }
     },
   },
-  plugins: [nextui()],
+  plugins: [nextui({
+    themes:{
+      light: {
+        colors: {
+          primary:"#84BC3C"
+        }
+      },
+      dark: {
+        colors: {
+          primary:"#84BC3C",
+        }
+      }
+    }
+  })],
 };
 export default config;
