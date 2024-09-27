@@ -1,28 +1,80 @@
-export default function UsersTable({users}: {users: any[]}) {
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableColumn,
+  TableRow,
+  TableCell,
+  getKeyValue,
+} from "@nextui-org/table";
+import { Pagination } from "@nextui-org/pagination";
+import React from "react";
+import type { User } from "../users/page";
+import { Spinner } from "@nextui-org/spinner";
+import { Selection } from "@react-types/shared";
+
+const columns = [
+  { key: "name", label: "Nombre" },
+  { key: "lastname", label: "Apellido" },
+  { key: "email", label: "Email" },
+  { key: "idNumber", label: "DNI" },
+];
+
+export default function UsersTable({ users, isLoading, onSelectionChange }: { users: User[], isLoading: boolean, onSelectionChange: (keys: Selection) => void }) {
+  const rowsPerPage = 10;
+  const [page, setPage] = React.useState(1);
+  const pages = Math.ceil(users.length / rowsPerPage);
+
+  const items = React.useMemo(() => {
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+
+    return users.slice(start, end);
+  }, [page, users]);
+
   return (
-    <div className="w-full border-1 px-4 py-1 rounded-lg bg-white">
-      <table className="w-full">
-        <thead className="w-full">
-          <tr className="font-bold w-full border-b-1 py-1 border-gray-600 h-10">
-            <td className="w-1/5">Nombre</td>
-            <td className="w-1/5">Apellido</td>
-            <td className="w-2/5">Email</td>
-            <td className="w-1/5">DNI</td>
-          </tr>
-        </thead>
-        <tbody>
-          {
-            users.map((user: any, key: any) => (
-              <tr key={key} className={`border-gray-300 h-10 ${key !== users.length - 1 ? 'border-b-1 ' : ''}`}>
-                <td>{user.name}</td>
-                <td>{user.lastname}</td>
-                <td>{user.email}</td>
-                <td>{user.idNumber}</td>
-              </tr>
-            ))
-          }
-        </tbody>
-      </table>
-    </div>
+    <>
+      <Table
+        aria-label="Loans Table"
+        bottomContent={
+          <div className="flex w-full justify-center">
+            <Pagination
+              isCompact
+              showControls
+              showShadow
+              color="primary"
+              page={page}
+              total={pages}
+              onChange={(page) => setPage(page)}
+              classNames={{}}
+            />
+          </div>
+        }
+        isHeaderSticky
+        selectionMode="single"
+        defaultSelectedKeys={["2"]}
+        color="primary"
+        onSelectionChange={onSelectionChange}
+      >
+        <TableHeader columns={columns}>
+          {(column) => (
+            <TableColumn key={column.key}>{column.label}</TableColumn>
+          )}
+        </TableHeader>
+        <TableBody
+          items={items}
+          isLoading={isLoading}
+          loadingContent={<Spinner color="current" />}
+        >
+          {(item) => (
+            <TableRow key={item.idNumber}>
+              {(columnKey) => (
+                <TableCell> {getKeyValue(item, columnKey)} </TableCell>
+              )}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </>
   );
 }

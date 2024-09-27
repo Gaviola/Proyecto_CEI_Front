@@ -10,12 +10,9 @@ import {
   getKeyValue,
 } from "@nextui-org/table";
 import React from "react";
-import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
-import { useAsyncList } from "@react-stately/data";
 import { Spinner } from "@nextui-org/spinner";
 import { useState, useEffect } from "react";
 import { Pagination } from "@nextui-org/pagination";
-import { Button } from "@nextui-org/button";
 import LoanModal from "../components/loanModal";
 import { Selection } from "@react-types/shared";
 
@@ -59,9 +56,6 @@ export default function LoansPage() {
   const [page, setPage] = React.useState(1);
   const rowsPerPage = 10;
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const [selectedKey, setSelectedKey] = React.useState<string | null>(null);
 
   const handleSelectedKey = (key: Selection) => {
     if (key === "all") {
@@ -75,18 +69,6 @@ export default function LoansPage() {
   
       setSelectedLoan(selectedLoan); // Actualiza el estado del préstamo seleccionado
     }
-  };
-
-  // Abre el modal para un nuevo préstamo
-  const handleNewLoan = () => {
-    setSelectedLoan(null); // Limpia el préstamo seleccionado
-    setIsModalOpen(true); // Abre el modal
-  };
-
-  // Abre el modal para modificar un préstamo
-  const handleEditLoan = (loan: Loan) => {
-    setSelectedLoan(loan); // Establece el préstamo seleccionado
-    setIsModalOpen(true); // Abre el modal
   };
 
   useEffect(() => {
@@ -115,6 +97,7 @@ export default function LoansPage() {
       <div className="flex flex-row">
         <LoanModal loan={selectedLoan} loans={loans} setLoans={setLoans}  />
       </div>
+      
       <Table
         aria-label="Loans Table"
         bottomContent={
@@ -162,13 +145,6 @@ export default function LoansPage() {
           )}
         </TableBody>
       </Table>
-      <div className="flex w-full justify-center sticky h-auto">
-        {/* <Pagination
-          currentPage={page}
-          totalPages={pages}
-          onPageChange={(newPage) => setPage(newPage)}
-        /> */}
-      </div>
     </div>
   );
 }
