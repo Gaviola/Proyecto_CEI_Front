@@ -145,8 +145,7 @@ export default function UserModal({
             />
           </ModalBody>
           <ModalFooter>
-            <Button onClick={onClose}>Cancel</Button>
-            <Button onClick={onPressSaveUser}>Save</Button>
+            <Button color="primary" variant="flat" onClick={onPressSaveUser}>Guardar</Button>
             <Button color="danger" variant="flat" onPress={onClose}>
               Cerrar
             </Button>

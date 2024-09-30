@@ -15,10 +15,11 @@ import { useState, useEffect } from "react";
 import { Pagination } from "@nextui-org/pagination";
 import LoanModal from "../components/loanModal";
 import { Selection } from "@react-types/shared";
+import { DateValue } from "@internationalized/date";
 
 export type Loan = {
   id: number;
-  deliveryDate: string;
+  deliveryDate: DateValue | undefined;
   deliveryResponsible: string;
   borrowerName: string;
   fileNumber: string;
@@ -26,13 +27,23 @@ export type Loan = {
   borrowedItem: string;
   clarification: string;
   term: number;
-  returnDate: string;
+  returnDate: DateValue | undefined;
   receptionResponsible: string;
   amount: number;
   paymentMethod: string;
   observation: string;
 };
 
+const formatDate = (date: DateValue | undefined): string => {
+  if (date && date.day !== undefined && date.month !== undefined && date.year !== undefined) {
+    const day = date.day.toString().padStart(2, "0");
+    const month = date.month.toString().padStart(2, "0");
+    const year = date.year.toString();
+    return `${day}/${month}/${year}`;
+  } else {
+    return "-";
+  }
+};
 const columns = [
   { key: "id", label: "ID" },
   { key: "borrowerName", label: "Nombre Alumno/Prestatario" },
@@ -65,8 +76,9 @@ export default function LoansPage() {
     } else {
       // Aquí asumimos que key es un Set<Key>
       const selectedKey = Array.from(key)[0]; // Obtiene la primera clave del conjunto (si hay alguna)
-      const selectedLoan = loans.find((loan) => loan.id.toString() === selectedKey) || null;
-  
+      const selectedLoan =
+        loans.find((loan) => loan.id.toString() === selectedKey) || null;
+
       setSelectedLoan(selectedLoan); // Actualiza el estado del préstamo seleccionado
     }
   };
@@ -95,9 +107,9 @@ export default function LoansPage() {
     <div className="sm:m-10 m-5 h-screen overflow-x-hidden">
       <h1 className="text-4xl font-bold py-4">Préstamos</h1>
       <div className="flex flex-row">
-        <LoanModal loan={selectedLoan} loans={loans} setLoans={setLoans}  />
+        <LoanModal loan={selectedLoan} loans={loans} setLoans={setLoans} />
       </div>
-      
+
       <Table
         aria-label="Loans Table"
         bottomContent={
@@ -110,9 +122,7 @@ export default function LoansPage() {
               page={page}
               total={pages}
               onChange={(page) => setPage(page)}
-              classNames={{
-                
-              }}
+              classNames={{}}
             />
           </div>
         }
@@ -121,8 +131,6 @@ export default function LoansPage() {
         defaultSelectedKeys={["2"]}
         color="primary"
         onSelectionChange={handleSelectedKey}
-       
-        
       >
         <TableHeader columns={columns}>
           {(column) => (
@@ -135,12 +143,17 @@ export default function LoansPage() {
           loadingContent={<Spinner color="current" />}
         >
           {(item) => (
-            <TableRow
-              key={item.id}
-            >
-              {(columnKey) => (
-                <TableCell> {getKeyValue(item, columnKey)} </TableCell>
-              )}
+            <TableRow key={item.id}>
+              {(columnKey) =>
+                columnKey === "returnDate" || columnKey === "deliveryDate" ? (
+                  <TableCell>
+                    {" "}
+                    {formatDate(getKeyValue(item, columnKey))}{" "}
+                  </TableCell>
+                ) : (
+                  <TableCell> {getKeyValue(item, columnKey)} </TableCell>
+                )
+              }
             </TableRow>
           )}
         </TableBody>

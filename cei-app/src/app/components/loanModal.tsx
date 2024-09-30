@@ -10,6 +10,8 @@ import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { useEffect, useState } from "react";
 import { Loan } from "../loans/page";
+import { DateInput } from "@nextui-org/date-input";
+import { DateValue, parseDate } from "@internationalized/date";
 
 export default function LoanModal({
   loan,
@@ -22,7 +24,7 @@ export default function LoanModal({
 }) {
   const [formData, setFormData] = useState<Loan>({
     id: loan?.id || 0,
-    deliveryDate: loan?.deliveryDate || "",
+    deliveryDate: loan?.deliveryDate || parseDate("2024-04-04"),
     deliveryResponsible: loan?.deliveryResponsible || "",
     borrowerName: loan?.borrowerName || "",
     fileNumber: loan?.fileNumber || "",
@@ -30,7 +32,7 @@ export default function LoanModal({
     borrowedItem: loan?.borrowedItem || "",
     clarification: loan?.clarification || "",
     term: loan?.term || 0,
-    returnDate: loan?.returnDate || "",
+    returnDate: loan?.returnDate || parseDate("2024-04-04"),
     receptionResponsible: loan?.receptionResponsible || "",
     amount: loan?.amount || 0,
     paymentMethod: loan?.paymentMethod || "",
@@ -38,11 +40,12 @@ export default function LoanModal({
   });
 
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+  const [date, setDate] = useState<DateValue>();
 
   const onPressNewLoan = () => {
     setFormData({
       id: 0,
-      deliveryDate: "",
+      deliveryDate: parseDate("2024-04-04"),
       deliveryResponsible: "",
       borrowerName: "",
       fileNumber: "",
@@ -50,7 +53,7 @@ export default function LoanModal({
       borrowedItem: "",
       clarification: "",
       term: 0,
-      returnDate: "",
+      returnDate: parseDate("2024-04-04"),
       receptionResponsible: "",
       amount: 0,
       paymentMethod: "",
@@ -86,15 +89,15 @@ export default function LoanModal({
   // Función para guardar un préstamo en la base de datos
   const saveLoan = async (loanData: Loan) => {
     try {
-      const response = await fetch('/api/loans', {
-        method: loanData.id ? 'PUT' : 'POST', // PUT para modificar, POST para nuevo
+      const response = await fetch("/api/loans", {
+        method: loanData.id ? "PUT" : "POST", // PUT para modificar, POST para nuevo
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(loanData),
       });
       if (!response.ok) {
-        throw new Error('Error al guardar el préstamo');
+        throw new Error("Error al guardar el préstamo");
       }
       // Manejar la respuesta (actualizar la UI o notificar éxito)
       console.log("Préstamo guardado con éxito");
@@ -102,7 +105,6 @@ export default function LoanModal({
       console.error(error);
     }
   };
-  
 
   return (
     <>
@@ -192,14 +194,23 @@ export default function LoanModal({
                     setFormData({ ...formData, term: parseInt(e.target.value) })
                   }
                 />
-                <Input
-                  placeholder="Fecha de devolución"
-                  label="Fecha de devolución"
-                  value={formData.returnDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, returnDate: e.target.value })
+
+                <DateInput
+                  label="Fecha de entrega"
+                  value={date}
+                  onChange={(newDate) =>
+                    setFormData({ ...formData, deliveryDate: newDate })
                   }
                 />
+
+                <DateInput
+                  label="Fecha de devolución"
+                  value={date}
+                  onChange={(newDate) =>
+                    setFormData({ ...formData, returnDate: newDate })
+                  }
+                />
+
                 <Input
                   placeholder="Monto ($)"
                   label="Monto ($)"
@@ -229,7 +240,9 @@ export default function LoanModal({
                 />
               </ModalBody>
               <ModalFooter>
-                <Button onPress={handleSaveLoan}>Guardar</Button>
+                <Button color="primary" variant="flat" onPress={handleSaveLoan}>
+                  Guardar
+                </Button>
                 <Button color="danger" variant="flat" onPress={onClose}>
                   Cerrar
                 </Button>
