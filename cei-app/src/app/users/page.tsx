@@ -6,13 +6,14 @@ import { Input } from "postcss";
 import InputSearcher from "../components/inputSearcher";
 import { Selection } from "@react-types/shared";
 import UserModal from "../components/userModal";
+import { DateValue } from "@internationalized/date";
 
 export interface User {
   id: number;
   name: string;
   lastName: string;
   idNumber: string;
-  registrationDate: string;
+  registrationDate: DateValue | undefined;
   email: string;
 }
 

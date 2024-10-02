@@ -40,7 +40,6 @@ export default function LoanModal({
   });
 
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
-  const [date, setDate] = useState<DateValue>();
 
   const onPressNewLoan = () => {
     setFormData({
@@ -148,7 +147,6 @@ export default function LoanModal({
               <ModalBody>
                 <Input
                   label="Nombre Alumno/Prestatario"
-                  placeholder="Nombre Alumno/Prestatario"
                   value={formData.borrowerName}
                   onChange={(e) =>
                     setFormData({ ...formData, borrowerName: e.target.value })
@@ -156,7 +154,6 @@ export default function LoanModal({
                 />
                 <Input
                   label="Legajo"
-                  placeholder="Legajo"
                   value={formData.fileNumber}
                   onChange={(e) =>
                     setFormData({ ...formData, fileNumber: e.target.value })
@@ -164,14 +161,14 @@ export default function LoanModal({
                 />
                 <Input
                   label="Celular"
-                  placeholder="Celular"
                   value={formData.cellphone}
                   onChange={(e) =>
                     setFormData({ ...formData, cellphone: e.target.value })
                   }
                 />
+                
+                {/* TODO: Usar Select de NextUI */}
                 <Input
-                  placeholder="Elemento prestado"
                   label="Elemento prestado"
                   value={formData.borrowedItem}
                   onChange={(e) =>
@@ -179,7 +176,6 @@ export default function LoanModal({
                   }
                 />
                 <Input
-                  placeholder="Aclaración"
                   label="Aclaración"
                   value={formData.clarification}
                   onChange={(e) =>
@@ -187,7 +183,6 @@ export default function LoanModal({
                   }
                 />
                 <Input
-                  placeholder="Plazo (días)"
                   label="Plazo (días)"
                   value={formData.term.toString()}
                   onChange={(e) =>
@@ -197,7 +192,7 @@ export default function LoanModal({
 
                 <DateInput
                   label="Fecha de entrega"
-                  value={date}
+                  value={formData.deliveryDate}
                   onChange={(newDate) =>
                     setFormData({ ...formData, deliveryDate: newDate })
                   }
@@ -205,14 +200,13 @@ export default function LoanModal({
 
                 <DateInput
                   label="Fecha de devolución"
-                  value={date}
+                  value={formData.returnDate}
                   onChange={(newDate) =>
                     setFormData({ ...formData, returnDate: newDate })
                   }
                 />
 
                 <Input
-                  placeholder="Monto ($)"
                   label="Monto ($)"
                   value={formData.amount.toString()}
                   onChange={(e) =>
@@ -223,7 +217,6 @@ export default function LoanModal({
                   }
                 />
                 <Input
-                  placeholder="Método de pago"
                   label="Método de pago"
                   value={formData.paymentMethod}
                   onChange={(e) =>
@@ -231,7 +224,6 @@ export default function LoanModal({
                   }
                 />
                 <Input
-                  placeholder="Observación"
                   label="Observación"
                   value={formData.observation}
                   onChange={(e) =>
