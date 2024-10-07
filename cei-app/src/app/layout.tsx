@@ -4,7 +4,6 @@ import "./globals.css";
 import Header from "./components/header";
 import Navbar from "./components/navbar";
 
-
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -18,12 +17,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} max-h-screen overflow-hidden`}>
+    <html lang="es">
+      <body className={`${inter.className} min-h-screen sm:overflow-y-hidden`}>
         {<Header />}
-        <div className="flex flex-row w-screen">
-          <div className=" sm:block hidden">{<Navbar />}</div>
-          {children}
+        <div className="flex flex-row w-screen ">
+          <div className=" sm:block hidden ">{<Navbar />}</div>
+          <div className="">
+            {children}
+          </div>
         </div>
       </body>
     </html>

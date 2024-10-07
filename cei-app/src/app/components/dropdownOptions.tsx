@@ -30,7 +30,7 @@ export default function DropdownOptions() {
         <DropdownSection title={"Vistas"} className="block sm:hidden">
           <DropdownItem
             key="usuarios"
-            href="/users"
+            href="/admin/users"
             startContent={<LuUsers className="size-5 text-zinc-500" />}
           >
             {<h2 className="">Usuarios</h2>}
@@ -38,6 +38,7 @@ export default function DropdownOptions() {
 
           <DropdownItem
             key="inventario"
+            href="/admin/inventory"
             startContent={
               <MdOutlineShoppingCart className="size-5 text-zinc-500" />
             }
@@ -47,7 +48,7 @@ export default function DropdownOptions() {
           <DropdownItem
             showDivider
             key="prestamos"
-            href="/loans"
+            href="/admin/loans"
             startContent={
               <MdOutlineInventory className="size-5 text-zinc-500" />
             }

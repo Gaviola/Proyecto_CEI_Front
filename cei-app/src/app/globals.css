@@ -10,7 +10,7 @@
 
 
 body {
-  height: 100vh;
+  height: fit-content;
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(to bottom right, rgb(var(--background-start-rgb)), rgb(var(--background-end-rgb)));
 }
