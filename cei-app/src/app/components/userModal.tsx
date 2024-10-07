@@ -10,6 +10,8 @@ import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { useEffect, useState } from "react";
 import { User } from "../users/page";
+import { DateInput } from "@nextui-org/date-input";
+import { DateValue, parseDate } from "@internationalized/date";
 
 export default function UserModal({
   user,
@@ -26,7 +28,7 @@ export default function UserModal({
     lastName: user?.lastName || "",
     idNumber: user?.idNumber || "",
     email: user?.email || "",
-    registrationDate: user?.registrationDate || "",
+    registrationDate: user?.registrationDate || parseDate("2024-04-04"),
   });
 
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
@@ -38,7 +40,7 @@ export default function UserModal({
       lastName: "",
       idNumber: "",
       email: "",
-      registrationDate: "",
+      registrationDate: parseDate("2024-04-04"),
     });
     onOpen();
   };
@@ -49,17 +51,18 @@ export default function UserModal({
   };
 
   const onPressSaveUser = () => {
-    if (formData.id === 0) {
+    if (formData.idNumber === "") {
       setUsers([...users, formData]);
     } else {
       setUsers(
         users.map((u) => {
-          if (u.id === formData.id) {
+          if (u.idNumber === formData.idNumber) {
             return formData;
           }
           return u;
         })
       );
+      console.log("Modificando usuario:", formData);
     }
     onClose();
   };
@@ -135,18 +138,18 @@ export default function UserModal({
                 setFormData({ ...formData, email: e.target.value })
               }
             />
-
-            <Input
-              label="Registration Date"
+            <DateInput
+              label="Fecha de registro"
               value={formData.registrationDate}
-              onChange={(e) =>
-                setFormData({ ...formData, registrationDate: e.target.value })
+              onChange={(newDate) =>
+                setFormData({ ...formData, registrationDate: newDate })
               }
             />
           </ModalBody>
           <ModalFooter>
-            <Button onClick={onClose}>Cancel</Button>
-            <Button onClick={onPressSaveUser}>Save</Button>
+            <Button color="primary" variant="flat" onClick={onPressSaveUser}>
+              Guardar
+            </Button>
             <Button color="danger" variant="flat" onPress={onClose}>
               Cerrar
             </Button>
