@@ -9,7 +9,7 @@ import {
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { useEffect, useState } from "react";
-import { User } from "../users/page";
+import { User } from "../admin/users/page";
 
 export default function UserModal({
   user,

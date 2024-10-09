@@ -9,7 +9,7 @@ import {
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { useEffect, useState } from "react";
-import { Loan } from "../loans/page";
+import { Loan } from "../admin/loans/page";
 
 export default function LoanModal({
   loan,
