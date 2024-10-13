@@ -17,10 +17,10 @@ const MailPasswordInput: React.FC<MailPasswordInputProps> = ({ onSubmit }) => {
   };
 
   return (
-    <form 
-        className="flex flex-col gap-4 my-5"
-        onSubmit={handleSubmit}
-        onKeyDown={(e) => { e.key === "Enter" && handleSubmit; }}
+    <form
+      className="flex flex-col gap-4 my-5"
+      onSubmit={handleSubmit}
+      onKeyDown={(e) => { e.key === "Enter" && handleSubmit; }}
     >
       <input
         className="border-1 border-gray-300 rounded-lg px-4 py-1"
