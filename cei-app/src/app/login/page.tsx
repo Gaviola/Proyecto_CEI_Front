@@ -10,9 +10,28 @@ export default function LoginPage() {
     alert(mail + password);
   }; // TODO
 
+  const handleGoogleSignIn = () => {
+    alert("Google sign in");
+    // signIn(
+    //   {
+    //     providers: [
+    //       GoogleProvider({
+    //         clientId: "207471985952-upkliik44r6pbpqkphc1l2shork5qkvl.apps.googleusercontent.com",
+    //         clientSecret: ""
+    //       })
+    //     ]
+    //   }
+    // );
+  }
+
+  const handleRegister = () => {
+    alert("Register");
+  }
+
   return (
     <div className="flex justify-center items-center w-full min-h-screen">
-      <div className="w-1/3 h-auto p-4 rounded text-center">
+      <div className="w-300 h-auto <p-4 rounded text-center">
+        {/* Mail & Password Login */}
         <h1 className="font-bold text-xl">Iniciá sesión</h1>
         <p>Ingresá tu correo y contraseña para ingresar</p>
         <MailPasswordInput onSubmit={handleSubmit} />
@@ -21,31 +40,24 @@ export default function LoginPage() {
 
         {/* Google  */}
         <button
-          className="border-1 border-gray-300 rounded-lg px-4 py-1 bg-white"
-          onClick={() => signIn(
-            {
-              providers: [
-                GoogleProvider({
-                  clientId: "207471985952-upkliik44r6pbpqkphc1l2shork5qkvl.apps.googleusercontent.com",
-                  clientSecret: ""
-                })
-              ]
-            }
-          )}
+          className="border-1 border-gray-300 rounded-lg px-4 py-1 bg-black text-white w-full my-3"
+          onClick={handleGoogleSignIn}
         >
           Iniciar con Google
         </button>
 
         <SeparatorLine />
 
-        <p>¿No tenés cuenta?</p>
+        {/* Registration */}
+        <p className="mt-3">¿No tenés cuenta?</p>
         <button
-          className="border-1 border-gray-300 rounded-lg px-4 py-1 bg-black text-white"
-        // onClick={() => Router.push("/register")}
+          className="border-1 border-gray-300 rounded-lg px-4 py-1 bg-black text-white w-full"
+          onClick={handleRegister}
         >
           Registrate
         </button>
+
       </div>
-    </div>
+    </div >
   );
 }
