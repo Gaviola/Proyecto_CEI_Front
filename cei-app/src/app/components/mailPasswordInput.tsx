@@ -1,18 +1,20 @@
 import React from "react";
+import Input from "./input";
 
 interface MailPasswordInputProps {
   onSubmit: (mail: string, password: string) => void;
 }
 
 const MailPasswordInput: React.FC<MailPasswordInputProps> = ({ onSubmit }) => {
+  const [formData, setFormData] = React.useState({
+    mail: "",
+    password: "",
+  });
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const mail = (
-      e.currentTarget.elements.namedItem("mail") as HTMLInputElement
-    ).value;
-    const password = (
-      e.currentTarget.elements.namedItem("password") as HTMLInputElement
-    ).value;
+    const mail = formData.mail;
+    const password = formData.password;
     onSubmit(mail, password);
   };
 
@@ -22,19 +24,19 @@ const MailPasswordInput: React.FC<MailPasswordInputProps> = ({ onSubmit }) => {
       onSubmit={handleSubmit}
       onKeyDown={(e) => { e.key === "Enter" && handleSubmit; }}
     >
-      <input
-        className="border-1 border-gray-300 rounded-lg px-4 py-1"
+      <Input
         type="email"
         name="mail"
         placeholder="Email"
-        required
+        required={true}
+        onChange={(e) => setFormData({ ...formData, mail: e.target.value })}
       />
-      <input
-        className="border-1 border-gray-300 rounded-lg px-4 py-1"
+      <Input
         type="password"
         name="password"
         placeholder="Password"
-        required
+        required={true}
+        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
       />
       <button
         className="border-1 border-gray-300 rounded-lg px-4 py-1 bg-black text-white"

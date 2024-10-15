@@ -4,6 +4,7 @@ import MailPasswordInput from "../components/mailPasswordInput";
 import SeparatorLine from "../components/separatorLine";
 import signIn from 'next-auth';
 import GoogleProvider from "next-auth/providers/google";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const handleSubmit = (mail: string, password: string) => {
@@ -24,8 +25,11 @@ export default function LoginPage() {
     // );
   }
 
+  const router = useRouter();
+
   const handleRegister = () => {
-    alert("Register");
+    // Push to registration page
+    router.push("/registration");
   }
 
   return (
