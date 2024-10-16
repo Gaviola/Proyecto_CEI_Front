@@ -3,9 +3,10 @@ import Input from "./input";
 
 interface MailPasswordInputProps {
   onSubmit: (mail: string, password: string) => void;
+  buttonLabel?: string;
 }
 
-const MailPasswordInput: React.FC<MailPasswordInputProps> = ({ onSubmit }) => {
+const MailPasswordInput: React.FC<MailPasswordInputProps> = ({ onSubmit, buttonLabel }) => {
   const [formData, setFormData] = React.useState({
     mail: "",
     password: "",
@@ -42,7 +43,7 @@ const MailPasswordInput: React.FC<MailPasswordInputProps> = ({ onSubmit }) => {
         className="border-1 border-gray-300 rounded-lg px-4 py-1 bg-black text-white"
         type="submit"
       >
-        Ingresar
+        {buttonLabel}
       </button>
     </form>
   );

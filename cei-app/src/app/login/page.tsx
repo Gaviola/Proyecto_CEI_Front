@@ -29,16 +29,19 @@ export default function LoginPage() {
 
   const handleRegister = () => {
     // Push to registration page
-    router.push("/registration");
+    router.push("/sign-up");
   }
 
   return (
     <div className="flex justify-center items-center w-full min-h-screen">
-      <div className="w-300 h-auto <p-4 rounded text-center">
+      <div className="h-auto <p-4 rounded text-center" style={{ width: '500px' }}>
         {/* Mail & Password Login */}
         <h1 className="font-bold text-xl">Iniciá sesión</h1>
         <p>Ingresá tu correo y contraseña para ingresar</p>
-        <MailPasswordInput onSubmit={handleSubmit} />
+        <MailPasswordInput
+          onSubmit={handleSubmit}
+          buttonLabel="Iniciar sesión"
+        />
 
         <SeparatorLine />
 

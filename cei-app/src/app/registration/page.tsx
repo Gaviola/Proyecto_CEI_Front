@@ -15,7 +15,8 @@ export default function RegistrationPage() {
 
     return (
         <div className="flex justify-center items-center w-full min-h-screen">
-            <div className="w-300 h-auto <p-4 rounded text-center">
+            <div className="h-auto <p-4 rounded text-center" style={{ width: '500px' }}>
+                <h1 className="font-bold text-xl">Completá tus datos</h1>
                 <form
                     className="flex flex-col gap-4 my-3"
                     onSubmit={handleSubmit}
@@ -46,7 +47,7 @@ export default function RegistrationPage() {
                         className="border-1 border-gray-300 rounded-lg px-4 py-1 bg-black text-white"
                         type="submit"
                     >
-                        Ingresar
+                        Guardar
                     </button>
                 </form>
             </div>
