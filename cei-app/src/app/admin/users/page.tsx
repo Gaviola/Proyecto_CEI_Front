@@ -1,11 +1,11 @@
 "use client";
-import UsersTable from "../components/usersTable";
+import UsersTable from "../../components/usersTable";
 import { useEffect, useState } from "react";
 import { debounce } from "lodash";
 import { Input } from "postcss";
-import InputSearcher from "../components/inputSearcher";
+import InputSearcher from "../../components/inputSearcher";
 import { Selection } from "@react-types/shared";
-import UserModal from "../components/userModal";
+import UserModal from "../../components/userModal";
 import { DateValue } from "@internationalized/date";
 
 export interface User {
