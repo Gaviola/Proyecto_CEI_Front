@@ -12,6 +12,24 @@ import { useEffect, useState } from "react";
 import { Loan } from "../loans/page";
 import { DateInput } from "@nextui-org/date-input";
 import { DateValue, parseDate } from "@internationalized/date";
+import type { PressEvent } from "@react-types/shared";
+import { User } from "../users/page";
+import { form } from "framer-motion/client";
+
+type LoanFormData = {
+  id: number;
+  deliveryDate: DateValue;
+  deliveryResponsible: string;
+  email: string;
+  borrowedItem: string;
+  term: number;
+  returnDate: DateValue;
+  receptionResponsible: string;
+  amount: number;
+  paymentMethod: string;
+  observation: string;
+  status: string;
+};
 
 export default function LoanModal({
   loan,
@@ -22,86 +40,180 @@ export default function LoanModal({
   loans: Loan[];
   setLoans: (loans: Loan[]) => void;
 }) {
-  const [formData, setFormData] = useState<Loan>({
+  const [formData, setFormData] = useState<LoanFormData>({
     id: loan?.id || 0,
-    deliveryDate: loan?.deliveryDate || parseDate("2024-04-04"),
+    deliveryDate: loan?.deliveryDate ? parseDate(loan.deliveryDate) : parseDate("2024-04-04"),
     deliveryResponsible: loan?.deliveryResponsible || "",
-    borrowerName: loan?.borrowerName || "",
-    fileNumber: loan?.fileNumber || "",
-    cellphone: loan?.cellphone || "",
+    email: loan?.email || "",
     borrowedItem: loan?.borrowedItem || "",
-    clarification: loan?.clarification || "",
     term: loan?.term || 0,
-    returnDate: loan?.returnDate || parseDate("2024-04-04"),
+    returnDate: loan?.returnDate ? parseDate(loan.returnDate) : parseDate("2024-04-04"),
     receptionResponsible: loan?.receptionResponsible || "",
     amount: loan?.amount || 0,
     paymentMethod: loan?.paymentMethod || "",
     observation: loan?.observation || "",
+    status:loan?.status || "Active",
   });
 
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+
+  const [error, setError] = useState<string | null>(null);
 
   const onPressNewLoan = () => {
     setFormData({
       id: 0,
       deliveryDate: parseDate("2024-04-04"),
       deliveryResponsible: "",
-      borrowerName: "",
-      fileNumber: "",
-      cellphone: "",
+      email: "",
       borrowedItem: "",
-      clarification: "",
       term: 0,
       returnDate: parseDate("2024-04-04"),
       receptionResponsible: "",
       amount: 0,
       paymentMethod: "",
       observation: "",
+      status:"Active",
     });
     onOpen();
   };
 
-  useEffect(() => {
-    if (loan) {
-      setFormData(loan);
-    }
-  }, [loan]);
+ 
 
-  const handleSaveLoan = () => {
-    // Si el ID es 0, es un nuevo préstamo
-    if (formData.id === 0) {
-      // Asigna un nuevo ID, asumiendo que los IDs son números consecutivos
-      const newId = loans.length > 0 ? loans[loans.length - 1].id + 1 : 1;
-      const newLoan = { ...formData, id: newId };
-      setLoans([...loans, newLoan]);
-    } else {
-      // Actualiza el préstamo existente
-      const updatedLoans = loans.map((l) =>
-        l.id === formData.id ? formData : l
+  // const handleSaveLoan = () => {
+  //   // Si el ID es 0, es un nuevo préstamo
+  //   if (formData.id === 0) {
+  //     // Asigna un nuevo ID, asumiendo que los IDs son números consecutivos
+  //     const newId = loans.length > 0 ? loans[loans.length - 1].id + 1 : 1;
+  //     const newLoan = { ...formData, id: newId };
+  //     setLoans([...loans, newLoan]);
+  //   } else {
+  //     // Actualiza el préstamo existente
+  //     const updatedLoans = loans.map((l) =>
+  //       l.id === formData.id ? formData : l
+  //     );
+  //     setLoans(updatedLoans);
+  //   }
+  //   // Cierra el modal
+  //   onClose();
+  // };
+
+  const handleSaveLoan = async () => {
+    try {
+
+      console.log(formData.email)
+
+      const user = await getUserByEmail(formData.email);
+      
+      if (user) {
+
+        console.log(user)
+
+        const cleanData = {
+          id: user.id,
+          deliveryDate: formData.deliveryDate, 
+          deliveryResponsible: formData.deliveryResponsible,
+          email: user.email,
+          borrowerName: user.id,
+          idNumber: user.idNumber,
+          legajo: user.legajo,
+          cellphone: user.cellphone,
+          borrowedItem: formData.borrowedItem,
+          term: formData.term,
+          returnDate: formData.returnDate, 
+          receptionResponsible: formData.receptionResponsible,
+          amount: formData.amount,
+          paymentMethod: formData.paymentMethod,
+          observation: formData.observation,
+          status:formData.status,
+        };
+
+        const savedLoan = await saveLoan(cleanData);
+
+        if (formData.email === "") {
+          // Nuevo préstamo
+          setLoans([...loans, savedLoan]);
+        } else {
+          // Préstamo existente
+          const updatedLoans = loans.map((l) =>
+            l.id === savedLoan.id ? savedLoan : l
+          );
+          setLoans(updatedLoans);
+        }
+
+      }
+
+      // Cierra el modal
+      onClose();
+    } catch (error) {
+      console.error("Error saving loan:", error);
+      setError(
+        "Hubo un problema al guardar el préstamo. Por favor, inténtalo de nuevo."
       );
-      setLoans(updatedLoans);
     }
-    // Cierra el modal
-    onClose();
   };
 
-  // Función para guardar un préstamo en la base de datos
-  const saveLoan = async (loanData: Loan) => {
+  const saveLoan = async (loanData: LoanFormData) => {
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/loans`;
+
     try {
-      const response = await fetch("/api/loans", {
+      const response = await fetch(apiUrl, {
         method: loanData.id ? "PUT" : "POST", // PUT para modificar, POST para nuevo
         headers: {
           "Content-Type": "application/json",
+          //"Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`, // Usa variables de entorno
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`,
         },
         body: JSON.stringify(loanData),
       });
+
       if (!response.ok) {
-        throw new Error("Error al guardar el préstamo");
+        const errorMessage = await response.text();
+        throw new Error(`Error al guardar el préstamo: ${errorMessage}`);
       }
-      // Manejar la respuesta (actualizar la UI o notificar éxito)
-      console.log("Préstamo guardado con éxito");
+
+      const savedLoan = await response.json(); // Asumiendo que el back-end devuelve el préstamo guardado
+      console.log("Préstamo guardado con éxito:", savedLoan);
+      return savedLoan;
     } catch (error) {
-      console.error(error);
+      console.error("Error en saveLoan:", error);
+      throw error; // Re-lanza el error para que handleSaveLoan lo maneje
+    }
+  };
+
+
+  // Asegúrate de tener estas variables de entorno configuradas en tu archivo .env.local
+  // NEXT_PUBLIC_API_URL=http://192.168.194.158:8080
+  // NEXT_PUBLIC_API_TOKEN=tu-token-jwt-aquí
+
+  const getUserByEmail = async (email: string): Promise<User | null> => {
+    try {
+      // Construir la URL con el correo electrónico como parámetro de consulta
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/users/email/${encodeURIComponent(email)}`;
+
+      const response = await fetch(apiUrl, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`,
+        },
+      });
+
+      if (!response.ok) {
+        // Manejar diferentes códigos de estado según tu API
+        if (response.status === 404) {
+          console.warn("Usuario no encontrado");
+          return null;
+        } else {
+          const errorText = await response.text();
+          throw new Error(`Error al obtener el usuario: ${errorText}`);
+        }
+      }
+
+      const user: User = await response.json();
+      return user;
+    } catch (error) {
+      console.error("Error en getUserByEmail:", error);
+      throw error;
     }
   };
 
@@ -119,10 +231,23 @@ export default function LoanModal({
         color="default"
         className="border-primaryGreen-500 bg-primaryGreen-500 text-white mb-4"
         onPress={() => {
-          console.log("Modificando préstamo:", loan);
           if (loan) {
-            console.log("Modificando préstamo:", loan);
-            setFormData(loan);
+            console.log("Modificando préstamo:", loan); 
+
+            setFormData({
+              id: loan.id,
+              deliveryDate: parseDate(loan.deliveryDate),
+              deliveryResponsible: loan.deliveryResponsible,
+              email: loan.email,
+              borrowedItem: loan.borrowedItem,
+              term: loan.term,
+              returnDate: parseDate(loan.returnDate),
+              receptionResponsible: loan.receptionResponsible,
+              amount: loan.amount,
+              paymentMethod: loan.paymentMethod,
+              observation: loan.observation,
+              status: loan.status,
+            });
             onOpen();
           }
         }}
@@ -146,42 +271,14 @@ export default function LoanModal({
               </ModalHeader>
               <ModalBody>
                 <Input
-                  label="Nombre Alumno/Prestatario"
-                  value={formData.borrowerName}
+                  label="Email"
+                  type="email"
+                  value={formData.email}
                   onChange={(e) =>
-                    setFormData({ ...formData, borrowerName: e.target.value })
+                    setFormData({ ...formData, email: e.target.value })
                   }
                 />
-                <Input
-                  label="Legajo"
-                  value={formData.fileNumber}
-                  onChange={(e) =>
-                    setFormData({ ...formData, fileNumber: e.target.value })
-                  }
-                />
-                <Input
-                  label="Celular"
-                  value={formData.cellphone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, cellphone: e.target.value })
-                  }
-                />
-                
-                {/* TODO: Usar Select de NextUI */}
-                <Input
-                  label="Elemento prestado"
-                  value={formData.borrowedItem}
-                  onChange={(e) =>
-                    setFormData({ ...formData, borrowedItem: e.target.value })
-                  }
-                />
-                <Input
-                  label="Aclaración"
-                  value={formData.clarification}
-                  onChange={(e) =>
-                    setFormData({ ...formData, clarification: e.target.value })
-                  }
-                />
+
                 <Input
                   label="Plazo (días)"
                   value={formData.term.toString()}

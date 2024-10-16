@@ -27,7 +27,9 @@ export default function UserModal({
     name: user?.name || "",
     lastName: user?.lastName || "",
     idNumber: user?.idNumber || "",
+    legajo: user?.legajo || "",
     email: user?.email || "",
+    cellphone: user?.cellphone || "",
     registrationDate: user?.registrationDate || parseDate("2024-04-04"),
   });
 
@@ -39,7 +41,9 @@ export default function UserModal({
       name: "",
       lastName: "",
       idNumber: "",
+      legajo: "",
       email: "",
+      cellphone: "",
       registrationDate: parseDate("2024-04-04"),
     });
     onOpen();
@@ -111,24 +115,31 @@ export default function UserModal({
           </ModalHeader>
           <ModalBody>
             <Input
-              label="Name"
+              label="Nombre"
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
             />
             <Input
-              label="Lastname"
+              label="Apellido"
               value={formData.lastName}
               onChange={(e) =>
                 setFormData({ ...formData, lastName: e.target.value })
               }
             />
             <Input
-              label="ID Number"
+              label="DNI"
               value={formData.idNumber}
               onChange={(e) =>
                 setFormData({ ...formData, idNumber: e.target.value })
+              }
+            />
+            <Input
+              label="Legajo"
+              value={formData.legajo}
+              onChange={(e) =>
+                setFormData({ ...formData, legajo: e.target.value })
               }
             />
             <Input
@@ -136,6 +147,13 @@ export default function UserModal({
               value={formData.email}
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
+              }
+            />
+            <Input
+              label="Celular"
+              value={formData.cellphone}
+              onChange={(e) =>
+                setFormData({ ...formData, cellphone: e.target.value })
               }
             />
             <DateInput

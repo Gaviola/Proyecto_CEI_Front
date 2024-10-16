@@ -15,23 +15,21 @@ import { useState, useEffect } from "react";
 import { Pagination } from "@nextui-org/pagination";
 import LoanModal from "../components/loanModal";
 import { Selection } from "@react-types/shared";
-import { DateValue } from "@internationalized/date";
+import { CalendarDate, DateValue, parseDate } from "@internationalized/date";
 
 export type Loan = {
   id: number;
-  deliveryDate: DateValue | undefined;
+  deliveryDate: string;
   deliveryResponsible: string;
-  borrowerName: string;
-  fileNumber: string;
-  cellphone: string;
+  email: string;
   borrowedItem: string;
-  clarification: string;
   term: number;
-  returnDate: DateValue | undefined;
+  returnDate: string;
   receptionResponsible: string;
   amount: number;
   paymentMethod: string;
   observation: string;
+  status: string;
 };
 
 const formatDate = (date: DateValue | undefined): string => {
@@ -48,6 +46,7 @@ const columns = [
   { key: "id", label: "ID" },
   { key: "borrowerName", label: "Nombre Alumno/Prestatario" },
   { key: "fileNumber", label: "Legajo" },
+  { key: "email", label: "Email" },
   { key: "cellphone", label: "Celular" },
   { key: "borrowedItem", label: "Elemento prestado" },
   { key: "clarification", label: "Aclaración" },
@@ -87,6 +86,7 @@ export default function LoansPage() {
     async function fetchLoans() {
       const res = await fetch("http://localhost:3000/api/loans");
       const data = await res.json();
+
       setLoans(data.loans);
       setIsLoading(false);
     }
