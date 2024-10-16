@@ -13,7 +13,7 @@ import React from "react";
 import { Spinner } from "@nextui-org/spinner";
 import { useState, useEffect } from "react";
 import { Pagination } from "@nextui-org/pagination";
-import LoanModal from "../components/loanModal";
+import LoanModal from "../../components/loanModal";
 import { Selection } from "@react-types/shared";
 import { DateValue } from "@internationalized/date";
 
