@@ -13,7 +13,7 @@ import React from "react";
 import { Spinner } from "@nextui-org/spinner";
 import { useState, useEffect } from "react";
 import { Pagination } from "@nextui-org/pagination";
-import LoanModal from "../components/loanModal";
+import LoanModal from "../../components/loanModal";
 import { Selection } from "@react-types/shared";
 import { CalendarDate, DateValue, parseDate } from "@internationalized/date";
 
@@ -33,7 +33,12 @@ export type Loan = {
 };
 
 const formatDate = (date: DateValue | undefined): string => {
-  if (date && date.day !== undefined && date.month !== undefined && date.year !== undefined) {
+  if (
+    date &&
+    date.day !== undefined &&
+    date.month !== undefined &&
+    date.year !== undefined
+  ) {
     const day = date.day.toString().padStart(2, "0");
     const month = date.month.toString().padStart(2, "0");
     const year = date.year.toString();
@@ -82,17 +87,36 @@ export default function LoansPage() {
     }
   };
 
-  useEffect(() => {
-    async function fetchLoans() {
-      const res = await fetch("http://localhost:3000/api/loans");
-      const data = await res.json();
+  const fetchLoans = async () => {
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/loans`;
 
+    try {
+      const res = await fetch(apiUrl, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`,
+        },
+      });
+      const data = await res.json();
       setLoans(data.loans);
       setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching loans:", error);
     }
+  };
 
-    fetchLoans();
-  }, []);
+  // useEffect(() => {
+  //   async function fetchLoans() {
+  //     const res = await fetch("http://localhost:3000/api/loans");
+  //     const data = await res.json();
+
+  //     setLoans(data.loans);
+  //     setIsLoading(false);
+  //   }
+
+  //   fetchLoans();
+  // }, [loans]);
 
   const pages = Math.ceil(loans.length / rowsPerPage);
 

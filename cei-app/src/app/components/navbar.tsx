@@ -39,12 +39,12 @@ export default function Navbar() {
           }`}
           onClick={() => handleOptionClick("Usuarios")}
         >
-          <a href="/users" className="">
+          <a href="/admin/users" className="">
             <LuUsers className="size-8" />
           </a>
 
           <a
-            href="/users"
+            href="/admin/users"
             className={
               isOpen
                 ? "block transform translate-x-0 duration-500"
@@ -81,11 +81,11 @@ export default function Navbar() {
           }`}
           onClick={() => handleOptionClick("Prestamos")}
         >
-          <a href="/loans">
+          <a href="/admin/loans">
             <MdOutlineShoppingCart className="size-8" />
           </a>
           <a
-            href="/loans"
+            href="/admin/loans"
             className={
               isOpen
                 ? "block transform translate-x-0 duration-500"

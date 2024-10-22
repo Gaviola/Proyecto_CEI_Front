@@ -9,11 +9,11 @@ import {
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { useEffect, useState } from "react";
-import { Loan } from "../loans/page";
+import { Loan } from "../admin/loans/page";
 import { DateInput } from "@nextui-org/date-input";
 import { DateValue, parseDate } from "@internationalized/date";
 import type { PressEvent } from "@react-types/shared";
-import { User } from "../users/page";
+import { User } from "../admin/users/page";
 import { form } from "framer-motion/client";
 
 type LoanFormData = {
@@ -30,6 +30,31 @@ type LoanFormData = {
   observation: string;
   status: string;
 };
+
+type ValidString = {
+  String: string;
+  Valid: boolean;
+};
+
+type ValidDate = {
+  String: DateValue;
+  Valid: boolean;
+}
+
+type SendDataFormat = {
+  id: number;
+  deliveryDate: ValidDate; 
+  returnDate: ValidDate;   
+  endingDate?: ValidDate; 
+  deliveryResponsible: number | string; 
+  borrowerName?: number; 
+  email: string;
+  observation: ValidString;  
+  amount: number;
+  paymentMethod: ValidString; 
+  status: string; 
+  borrowedItem: string;
+}
 
 export default function LoanModal({
   loan,
@@ -108,22 +133,18 @@ export default function LoanModal({
 
         console.log(user)
 
-        const cleanData = {
+        //Sets data format to send to the API
+        const cleanData:SendDataFormat = {
           id: user.id,
-          deliveryDate: formData.deliveryDate, 
+          deliveryDate: {String:formData.deliveryDate, Valid:formData.deliveryDate.toString() !== ""}, 
           deliveryResponsible: formData.deliveryResponsible,
           email: user.email,
           borrowerName: user.id,
-          idNumber: user.idNumber,
-          legajo: user.legajo,
-          cellphone: user.cellphone,
           borrowedItem: formData.borrowedItem,
-          term: formData.term,
-          returnDate: formData.returnDate, 
-          receptionResponsible: formData.receptionResponsible,
+          returnDate: {String:formData.returnDate, Valid:formData.returnDate.toString() !== ""}, 
           amount: formData.amount,
-          paymentMethod: formData.paymentMethod,
-          observation: formData.observation,
+          paymentMethod: {String:formData.paymentMethod, Valid:formData.paymentMethod !== ""},
+          observation: {String:formData.observation, Valid:formData.observation !== ""},
           status:formData.status,
         };
 
@@ -152,7 +173,7 @@ export default function LoanModal({
     }
   };
 
-  const saveLoan = async (loanData: LoanFormData) => {
+  const saveLoan = async (loanData: SendDataFormat) => {
     const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/loans`;
 
     try {
