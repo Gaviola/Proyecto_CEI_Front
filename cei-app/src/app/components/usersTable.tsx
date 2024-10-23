@@ -9,7 +9,7 @@ import {
 } from "@nextui-org/table";
 import { Pagination } from "@nextui-org/pagination";
 import React from "react";
-import type { User } from "../users/page";
+import type { User } from "../admin/users/page";
 import { Spinner } from "@nextui-org/spinner";
 import { Selection } from "@react-types/shared";
 
