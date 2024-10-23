@@ -22,3 +22,28 @@ export const getEveryItemType = async () => {
     throw error;
   }
 };
+
+export const getItemsByType = async (itemType) => {
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/items/available/${encodeURIComponent(itemType)}`;
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorMessage = await response.text();
+      throw new Error(`Error al obtener los ítems del tipo ${itemType}: ${errorMessage}`);
+    }
+
+    const items = await response.json();
+    return items;
+  } catch (error) {
+    console.error("Error en getItemsByType:", error);
+    throw error;
+  }
+}

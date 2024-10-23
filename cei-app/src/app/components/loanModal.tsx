@@ -8,18 +8,27 @@ import {
 } from "@nextui-org/modal";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
-import { useEffect, useState } from "react";
+import { Key, useEffect, useState } from "react";
 import { Loan } from "../admin/loans/page";
 import { DateInput } from "@nextui-org/date-input";
 import { DateValue, parseDate } from "@internationalized/date";
 import type { PressEvent } from "@react-types/shared";
 import { User } from "../admin/users/page";
 import { form } from "framer-motion/client";
-import { saveLoan } from "../../services/loans";
+import { saveLoan, saveLoanItem } from "../../services/loans";
 import { getUserByEmail } from "../../services/users";
-import { getEveryItemType } from "../../services/inventory";
+import { getEveryItemType, getItemsByType } from "../../services/inventory";
 import { CheckboxGroup, Checkbox } from "@nextui-org/checkbox";
 import { CustomCheckbox } from "./customCheckbox";
+import {
+  Select,
+  SelectSection,
+  SelectItem,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from "@nextui-org/react";
 
 type LoanFormData = {
   id: number;
@@ -42,23 +51,23 @@ type ValidString = {
 };
 
 type ValidDate = {
-  String: DateValue;
+  String: string;
   Valid: boolean;
 };
 
 type SendDataFormat = {
-  id: number;
+  //id: number;
   deliveryDate: ValidDate;
   returnDate: ValidDate;
   endingDate?: ValidDate;
   deliveryResponsible: number | string;
   borrowerName?: number;
-  email: string;
+  //email: string;
   observation: ValidString;
   amount: number;
   paymentMethod: ValidString;
   status: string;
-  borrowedItem: string;
+  //borrowedItem: string;
 };
 
 export default function LoanModal({
@@ -92,6 +101,24 @@ export default function LoanModal({
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
   const [error, setError] = useState<string | null>(null);
   const [groupSelected, setGroupSelected] = useState<string[]>([]);
+  const [selectedItem, setSelectedItem] = useState<Key>();
+  const [items, setItems] = useState<{ id: number; name: string }[]>([]);
+  const [instances, setInstances] = useState<{ id: number; value: string }[]>(
+    []
+  );
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const items = await getEveryItemType();
+        console.log(items);
+        setItems(items);
+      } catch (error) {
+        console.error("Error fetching items:", error);
+      }
+    };
+    fetchItems();
+  }, []);
 
   const onPressNewLoan = () => {
     setFormData({
@@ -122,17 +149,17 @@ export default function LoanModal({
 
         //Sets data format to send to the API
         const cleanData: SendDataFormat = {
-          id: user.id,
+          //id: user.id,
           deliveryDate: {
-            String: formData.deliveryDate,
+            String: formData.deliveryDate.toString(),
             Valid: formData.deliveryDate.toString() !== "",
           },
-          deliveryResponsible: formData.deliveryResponsible,
-          email: user.email,
+          deliveryResponsible: 2,
+          //email: user.email,
           borrowerName: user.id,
-          borrowedItem: formData.borrowedItem,
+          //borrowedItem: formData.borrowedItem,
           returnDate: {
-            String: formData.returnDate,
+            String: formData.returnDate.toString(),
             Valid: formData.returnDate.toString() !== "",
           },
           amount: formData.amount,
@@ -145,17 +172,30 @@ export default function LoanModal({
             Valid: formData.observation !== "",
           },
           status: formData.status,
+          endingDate: {
+            String: formData.returnDate.toString(),
+            Valid: formData.returnDate.toString() !== "",
+          },
         };
 
-        const savedLoan = await saveLoan(cleanData);
+        //Envía el préstamo a la API
+        const savedLoanID = await saveLoan(cleanData);
+
+        const loanItemData = {
+          loan_id: savedLoanID,
+          item_id: 1,
+        };
+
+        //Envía el item prestado a la API
+        const savedLoanItemID = await saveLoanItem(loanItemData);
 
         if (formData.email === "") {
           // Nuevo préstamo
-          setLoans([...loans, savedLoan]);
+          setLoans([...loans, savedLoanID]);
         } else {
           // Préstamo existente
           const updatedLoans = loans.map((l) =>
-            l.id === savedLoan.id ? savedLoan : l
+            l.id === savedLoanID.id ? savedLoanID : l
           );
           setLoans(updatedLoans);
         }
@@ -170,6 +210,24 @@ export default function LoanModal({
       );
     }
   };
+
+  const handleSelectionChange = async (key: Key) => {
+    setSelectedItem(key);
+    const items = await getItemsByType(key);
+    setInstances(items);
+
+    console.log("instancias:", items);
+  };
+
+  const handleItemSelection = async (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {};
+
+  // const items = [
+  //   { key: "mate", value: "Mate" },
+  //   { key: "termo", value: "Termo" },
+  //   { key: "zapatilla", value: "Zapatilla" },
+  // ];
 
   return (
     <>
@@ -233,21 +291,34 @@ export default function LoanModal({
                   }
                 />
 
-                <div className="flex flex-col gap-1 w-full">
-                  <CheckboxGroup
-                    className="gap-1"
-                    label="Selecciona el elemento"
-                    orientation="horizontal"
-                    value={groupSelected}
-                    onChange={setGroupSelected}
-                  >
-                    <CustomCheckbox value="wifi">Wifi</CustomCheckbox>
-                    <CustomCheckbox value="tv">TV</CustomCheckbox>
-                    <CustomCheckbox value="kitchen">Kitchen</CustomCheckbox>
-                    <CustomCheckbox value="parking">Parking</CustomCheckbox>
-                    <CustomCheckbox value="pool">Pool</CustomCheckbox>
-                    <CustomCheckbox value="gym">Gym</CustomCheckbox>
-                  </CheckboxGroup>
+                <div className="h-5 mb-4 w-full">
+                  <Dropdown>
+                    <DropdownTrigger>
+                      <Button >Selecciona un Item</Button>
+                    </DropdownTrigger>
+                    <DropdownMenu
+                      items={items}
+                      onAction={handleSelectionChange}
+                    >
+
+                      {(item) => (
+                        <DropdownItem key={item.id}>
+                          <Select
+                            label={item.name}
+                            items={instances}
+                            onChange={handleItemSelection}
+                          >
+                            {(instance) => (
+                              <SelectItem key={instance.id}>
+                                {instance.value}
+                              </SelectItem>
+                            )}
+                          </Select>
+                          {/* {item.name} */}
+                        </DropdownItem>
+                      )}
+                    </DropdownMenu>
+                  </Dropdown>
                 </div>
 
                 <Input
