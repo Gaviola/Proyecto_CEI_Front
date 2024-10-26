@@ -2,14 +2,35 @@
 import React from "react";
 import MailPasswordInput from "../components/mailPasswordInput";
 import SeparatorLine from "../components/separatorLine";
-import signIn from 'next-auth';
-import GoogleProvider from "next-auth/providers/google";
 import { useRouter } from "next/navigation";
+import { toast, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+
 
 export default function LoginPage() {
-  const handleSubmit = (mail: string, password: string) => {
-    alert(mail + password);
-  }; // TODO
+  const handleSubmit = async (mail: string, password: string) => {
+    try {
+      const response = await fetch("http://localhost:8080/login/user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: mail,
+          password: password,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // TODO
+      } else {
+        toast.error("Error al ingresar");
+      }
+    } catch (error) {
+      toast.error("Error al ingresar");
+    }
+  };
 
   const handleGoogleSignIn = () => {
     alert("Google sign in");
@@ -35,6 +56,7 @@ export default function LoginPage() {
   return (
     <div className="flex justify-center items-center w-full min-h-screen">
       <div className="h-auto <p-4 rounded text-center" style={{ width: '500px' }}>
+        <ToastContainer />
         {/* Mail & Password Login */}
         <h1 className="font-bold text-xl">Iniciá sesión</h1>
         <p>Ingresá tu correo y contraseña para ingresar</p>
