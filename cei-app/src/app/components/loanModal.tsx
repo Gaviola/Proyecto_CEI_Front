@@ -29,6 +29,8 @@ import {
   DropdownMenu,
   DropdownItem,
 } from "@nextui-org/react";
+import { set } from "lodash";
+import { send } from "process";
 
 type LoanFormData = {
   id: number;
@@ -56,7 +58,7 @@ type ValidDate = {
 };
 
 type SendDataFormat = {
-  //id: number;
+  id: number;
   deliveryDate: ValidDate;
   returnDate: ValidDate;
   endingDate?: ValidDate;
@@ -67,17 +69,19 @@ type SendDataFormat = {
   amount: number;
   paymentMethod: ValidString;
   status: string;
-  //borrowedItem: string;
+  itemType: number;
 };
 
 export default function LoanModal({
   loan,
   loans,
   setLoans,
+  fetchAndFormatLoans,
 }: {
   loan: Loan | null;
   loans: Loan[];
   setLoans: (loans: Loan[]) => void;
+  fetchAndFormatLoans: () => void;
 }) {
   const [formData, setFormData] = useState<LoanFormData>({
     id: loan?.id || 0,
@@ -108,9 +112,6 @@ export default function LoanModal({
   const [groupSelected, setGroupSelected] = useState<string[]>([]);
   const [selectedItem, setSelectedItem] = useState<Key>();
   const [items, setItems] = useState<{ id: number; name: string }[]>([]);
-  const [instances, setInstances] = useState<{ id: number; value: string }[]>(
-    []
-  );
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -132,7 +133,7 @@ export default function LoanModal({
         String: "2000-01-01",
         Valid: false,
       },
-      deliveryResponsible: "",
+      deliveryResponsible: 1,
       borrowedItem: 0,
       returnDate: {
         String: "2000-01-01",
@@ -147,7 +148,7 @@ export default function LoanModal({
         String: "",
         Valid: false,
       },
-      status: "",
+      status: "Active",
       email: "",
     });
     onOpen();
@@ -190,8 +191,25 @@ export default function LoanModal({
       const user = await getUserByEmail(formData.email);
 
       if (user) {
+        const sendData: SendDataFormat = {
+          id: formData.id,
+          deliveryDate: formData.deliveryDate,
+          returnDate: formData.returnDate,
+          endingDate: formData.returnDate,
+          deliveryResponsible: formData.deliveryResponsible,
+          borrowerName: user.id,
+          observation: formData.observation,
+          amount: formData.amount,
+          paymentMethod: formData.paymentMethod,
+          status: formData.status,
+          itemType: formData.borrowedItem,
+        };
+
         //Envía el préstamo a la API
-        const savedLoanID = await saveLoan(formData);
+
+        const savedLoanID = await saveLoan(sendData);
+
+        console.log("Préstamo guardado:", savedLoanID);
 
         const loanItemData = {
           loan_id: savedLoanID,
@@ -199,7 +217,7 @@ export default function LoanModal({
         };
 
         //Envía el item prestado a la API
-        const savedLoanItemID = await saveLoanItem(loanItemData);
+        //const savedLoanItemID = await saveLoanItem(loanItemData);
 
         if (formData.email === "") {
           // Nuevo préstamo
@@ -214,6 +232,7 @@ export default function LoanModal({
       }
 
       // Cierra el modal
+      fetchAndFormatLoans();
       onClose();
     } catch (error) {
       console.error("Error saving loan:", error);
@@ -222,18 +241,6 @@ export default function LoanModal({
       );
     }
   };
-
-  const handleSelectionChange = async (key: Key) => {
-    setSelectedItem(key);
-    const items = await getItemsByType(key);
-    setInstances(items);
-
-    console.log("instancias:", items);
-  };
-
-  const handleItemSelection = async (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {};
 
   // const items = [
   //   { key: "mate", value: "Mate" },
@@ -283,33 +290,26 @@ export default function LoanModal({
                   }
                 />
 
-                <div className="h-5 mb-4 w-full">
-                  <Dropdown>
-                    <DropdownTrigger>
-                      <Button>Selecciona un Item</Button>
-                    </DropdownTrigger>
-                    <DropdownMenu
-                      items={items}
-                      onAction={handleSelectionChange}
-                    >
-                      {(item) => (
-                        <DropdownItem key={item.id}>
-                          <Select
-                            label={item.name}
-                            items={instances}
-                            onChange={handleItemSelection}
-                          >
-                            {(instance) => (
-                              <SelectItem key={instance.id}>
-                                {instance.value}
-                              </SelectItem>
-                            )}
-                          </Select>
-                          {/* {item.name} */}
-                        </DropdownItem>
-                      )}
-                    </DropdownMenu>
-                  </Dropdown>
+                <div className="h-5 mb-9 w-full">
+                  <Select
+                    label="Seleccioná un item"
+                    items={items}
+                    onChange={(e) => {
+                      setSelectedItem(e.target.value);
+                      console.log(e.target.value);
+                      setFormData({
+                        ...formData,
+                        borrowedItem: Number(e.target.value),
+                      });
+                    }}
+                  >
+                    {(item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.name}
+                      </SelectItem>
+                    )}
+                  </Select>
+                  {/* {item.name} */}
                 </div>
 
                 <DateInput
@@ -325,7 +325,7 @@ export default function LoanModal({
 
                 <DateInput
                   label="Fecha de devolución"
-                  value={parseDate(formData.deliveryDate.String)}
+                  value={parseDate(formData.returnDate.String)}
                   onChange={(newDate) =>
                     setFormData({
                       ...formData,
