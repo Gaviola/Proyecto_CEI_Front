@@ -10,7 +10,7 @@ import 'react-toastify/dist/ReactToastify.css';
 export default function LoginPage() {
   const handleSubmit = async (mail: string, password: string) => {
     try {
-      const response = await fetch("http://localhost:8080/login/user", {
+      const response = await fetch("http://192.168.194.158:8080/login/user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -23,7 +23,12 @@ export default function LoginPage() {
 
       if (response.ok) {
         const data = await response.json();
-        // TODO
+        localStorage.setItem("sessionToken", data.tokenJWT)
+
+        // Redirect
+        if (data.role === "admin") router.push("/admin/loans")
+        if (data.role === "student") router.push("/user/loans") // TODO
+
       } else {
         toast.error("Error al ingresar");
       }
