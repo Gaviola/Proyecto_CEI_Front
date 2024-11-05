@@ -2,32 +2,39 @@
 import React from "react";
 import MailPasswordInput from "../components/mailPasswordInput";
 import { toast, ToastContainer } from "react-toastify";
+import { useRouter } from "next/navigation";
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function SignupPage() {
+  const router = useRouter();
+
   const handleSubmit = async (mail: string, password: string) => {
     try {
-      const response = await fetch("http://localhost:8080/login/user", {
+      const response = await fetch("http://192.168.194.158:8080/register/user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: mail,
+          email: mail,
           password: password,
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        // TODO
+        localStorage.setItem("sessionToken", data.tokenJWT)
+
+        // Redirect 
+        router.push("/user/loans") // TODO
+
       } else {
         toast.error("Error al ingresar");
       }
     } catch (error) {
       toast.error("Error al ingresar");
     }
-  }; // TODO
+  };
 
 
   return (
