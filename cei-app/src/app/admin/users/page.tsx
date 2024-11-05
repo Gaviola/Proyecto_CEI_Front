@@ -16,7 +16,7 @@ export interface User {
   legajo: string;
   registrationDate: DateValue | undefined;
   email: string;
-  cellphone: string;
+  phone: string;
 }
 
 export default function UsersPage() {

@@ -16,53 +16,169 @@ import { Pagination } from "@nextui-org/pagination";
 import LoanModal from "../../components/loanModal";
 import { Selection } from "@react-types/shared";
 import { CalendarDate, DateValue, parseDate } from "@internationalized/date";
+import { fetchLoans } from "@/services/loans";
+import { getUserByID } from "@/services/users";
+import { User } from "../users/page";
+
+type ValidString = {
+  String: string;
+  Valid: boolean;
+};
+
+type ValidDate = {
+  String: string;
+  Valid: boolean;
+};
 
 export type Loan = {
   id: number;
-  deliveryDate: string;
-  deliveryResponsible: string;
-  email: string;
-  borrowedItem: string;
-  term: number;
-  returnDate: string;
-  receptionResponsible: string;
+  deliveryDate: ValidDate;
+  returnDate: ValidDate;
+  endingDate?: ValidDate;
+  deliveryResponsible: number;
+  borrowerName?: number;
+  observation: ValidString;
   amount: number;
-  paymentMethod: string;
-  observation: string;
+  paymentMethod: ValidString;
   status: string;
+  borrowedItem: number;
 };
 
-const formatDate = (date: DateValue | undefined): string => {
-  if (
-    date &&
-    date.day !== undefined &&
-    date.month !== undefined &&
-    date.year !== undefined
-  ) {
-    const day = date.day.toString().padStart(2, "0");
-    const month = date.month.toString().padStart(2, "0");
-    const year = date.year.toString();
-    return `${day}/${month}/${year}`;
-  } else {
-    return "-";
-  }
+type TableLoan = {
+  id: number;
+  borrowerName: string;
+  legajo: string;
+  email: string;
+  phone: number;
+  deliveryDate: string;
+  returnDate: string;
+  endingDate?: string;
+  deliveryResponsible?: string;
+  observation: string;
+  amount: number;
+  paymentMethod: string;
+  status: string;
+  borrowedItem: string;
 };
+
+const mockLoans: Loan[] = [
+  {
+    id: 1,
+    deliveryDate: { String: "2023-10-01", Valid: true },
+    returnDate: { String: "2023-10-15", Valid: true },
+    deliveryResponsible: 12345,
+    borrowerName: 67890,
+    observation: { String: "Ninguna observación", Valid: true },
+    amount: 1000,
+    paymentMethod: { String: "Tarjeta de crédito", Valid: true },
+    status: "Pendiente",
+    borrowedItem: 1,
+  },
+  {
+    id: 2,
+    deliveryDate: { String: "2023-09-20", Valid: true },
+    returnDate: { String: "2023-10-05", Valid: true },
+    deliveryResponsible: 54321,
+    borrowerName: 98765,
+    observation: { String: "Revisar al devolver", Valid: true },
+    amount: 500,
+    paymentMethod: { String: "Efectivo", Valid: true },
+    status: "Completado",
+    borrowedItem: 2,
+  },
+  {
+    id: 3,
+    deliveryDate: { String: "2023-08-15", Valid: true },
+    returnDate: { String: "2023-09-01", Valid: true },
+    deliveryResponsible: 11223,
+    borrowerName: 44556,
+    observation: { String: "Urgente", Valid: true },
+    amount: 750,
+    paymentMethod: { String: "Transferencia bancaria", Valid: true },
+    status: "Pendiente",
+    borrowedItem: 3,
+  },
+  {
+    id: 4,
+    deliveryDate: { String: "2023-07-10", Valid: true },
+    returnDate: { String: "2023-07-25", Valid: true },
+    deliveryResponsible: 33445,
+    borrowerName: 66778,
+    observation: { String: "Ninguna observación", Valid: true },
+    amount: 1200,
+    paymentMethod: { String: "Cheque", Valid: true },
+    status: "Completado",
+    borrowedItem: 4,
+  },
+  {
+    id: 5,
+    deliveryDate: { String: "2023-06-05", Valid: true },
+    returnDate: { String: "2023-06-20", Valid: true },
+    deliveryResponsible: 55667,
+    borrowerName: 88990,
+    observation: { String: "Revisar al devolver", Valid: true },
+    amount: 300,
+    paymentMethod: { String: "Tarjeta de débito", Valid: true },
+    status: "Pendiente",
+    borrowedItem: 5,
+  },
+];
+
+export const mockUser: User = {
+  id: 1,
+  name: "John",
+  lastName: "Doe",
+  idNumber: "12345678",
+  legajo: "20230001",
+  registrationDate: parseDate("2023-10-01"),
+  email: "john.doe@example.com",
+  phone: "1234567890",
+};
+
+// const formatDate = (date: DateValue | undefined): string => {
+//   if (
+//     date &&
+//     date.day !== undefined &&
+//     date.month !== undefined &&
+//     date.year !== undefined
+//   ) {
+//     const day = date.day.toString().padStart(2, "0");
+//     const month = date.month.toString().padStart(2, "0");
+//     const year = date.year.toString();
+//     return `${day}/${month}/${year}`;
+//   } else {
+//     return "-";
+//   }
+// };
+
+const formatDate = (date: ValidDate): string => {
+  if (date && date.Valid) {
+    const isoDate = date.String.split("T")[0]; // Remueve la parte de la zona horaria
+    const parsedDate = parseDate(isoDate); // Analiza solo la fecha
+    const formatedDate = `${parsedDate.day
+      .toString()
+      .padStart(2, "0")}/${parsedDate.month.toString().padStart(2, "0")}/${
+      parsedDate.year
+    }`;
+    return formatedDate;
+  }
+  return "-";
+};
+
 const columns = [
   { key: "id", label: "ID" },
   { key: "borrowerName", label: "Nombre Alumno/Prestatario" },
-  { key: "fileNumber", label: "Legajo" },
+  { key: "legajo", label: "Legajo" },
   { key: "email", label: "Email" },
-  { key: "cellphone", label: "Celular" },
+  { key: "phone", label: "Celular" },
   { key: "borrowedItem", label: "Elemento prestado" },
-  { key: "clarification", label: "Aclaración" },
-  { key: "term", label: "Plazo (días)" },
   { key: "deliveryDate", label: "Fecha de entrega" },
   { key: "returnDate", label: "Fecha de devolución" },
   { key: "amount", label: "Monto ($)" },
   { key: "paymentMethod", label: "Método de pago" },
   { key: "deliveryResponsible", label: "Responsable de entrega" },
-  { key: "receptionResponsible", label: "Responsable de recepción" },
   { key: "observation", label: "Observación" },
+  { key: "status", label: "Estado" },
 ];
 
 export default function LoansPage() {
@@ -71,6 +187,7 @@ export default function LoansPage() {
   const [page, setPage] = React.useState(1);
   const rowsPerPage = 10;
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
+  const [loansTable, setLoansTable] = useState<TableLoan[]>([]);
 
   const handleSelectedKey = (key: Selection) => {
     if (key === "all") {
@@ -87,36 +204,25 @@ export default function LoansPage() {
     }
   };
 
-  const fetchLoans = async () => {
-    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/loans`;
+  useEffect(() => {
+    const fetchAndFormatLoans = async () => {
+      setIsLoading(true);
+      const data = await fetchLoans();
+      //const data = mockLoans;
+      setLoans(data);
 
-    try {
-      const res = await fetch(apiUrl, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`,
-        },
-      });
-      const data = await res.json();
-      setLoans(data.loans);
+      console.log("data:", data);
+
+      const formattedLoans = await Promise.all(
+        data.map((loan: Loan) => formatItem(loan))
+      );
+      console.log("formattedLoans:", formattedLoans);
+      setLoansTable(formattedLoans);
       setIsLoading(false);
-    } catch (error) {
-      console.error("Error fetching loans:", error);
-    }
-  };
+    };
 
-  // useEffect(() => {
-  //   async function fetchLoans() {
-  //     const res = await fetch("http://localhost:3000/api/loans");
-  //     const data = await res.json();
-
-  //     setLoans(data.loans);
-  //     setIsLoading(false);
-  //   }
-
-  //   fetchLoans();
-  // }, [loans]);
+    fetchAndFormatLoans();
+  }, []);
 
   const pages = Math.ceil(loans.length / rowsPerPage);
 
@@ -124,8 +230,42 @@ export default function LoansPage() {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
 
-    return loans.slice(start, end);
-  }, [page, loans]);
+    return loansTable.slice(start, end);
+  }, [page, loansTable]);
+
+  interface FormattedItem {
+    [key: string]: any;
+  }
+
+  const formatItem = async (item: Loan): Promise<TableLoan> => {
+    const userData: User = await getUserByID(item.borrowerName);
+    const deliveryResponsible: User = await getUserByID(
+      item.deliveryResponsible
+    );
+    //const userData: User = mockUser;
+    //const deliveryResponsible: User = mockUser;
+
+    const borrowerName = (userData?.name || "") + " " + (userData?.lastName || "");
+
+    const formattedItem = {
+      id: item?.id || 0,
+      borrowerName: borrowerName || "",
+      legajo: userData?.legajo || "",
+      email: userData?.email || "",
+      phone: userData?.phone || 0,
+      borrowedItem: "",
+      deliveryDate: formatDate(item?.deliveryDate) || "",
+      returnDate: formatDate(item?.returnDate) || "",
+      //endingDate: formatDate(item.endingDate),
+      amount: item?.amount || 0,
+      paymentMethod: item?.paymentMethod.String || "",
+      deliveryResponsible: deliveryResponsible?.name || "",
+      observation: item?.observation.String || "",
+      status: item?.status || "",
+    };
+
+    return formattedItem as TableLoan;
+  };
 
   return (
     <div className="sm:m-10 m-5 h-screen overflow-x-hidden">
@@ -168,16 +308,9 @@ export default function LoansPage() {
         >
           {(item) => (
             <TableRow key={item.id}>
-              {(columnKey) =>
-                columnKey === "returnDate" || columnKey === "deliveryDate" ? (
-                  <TableCell>
-                    {" "}
-                    {formatDate(getKeyValue(item, columnKey))}{" "}
-                  </TableCell>
-                ) : (
-                  <TableCell> {getKeyValue(item, columnKey)} </TableCell>
-                )
-              }
+              {(columnKey) => {
+                return <TableCell>{getKeyValue(item, columnKey)}</TableCell>;
+              }}
             </TableRow>
           )}
         </TableBody>

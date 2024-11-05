@@ -32,17 +32,17 @@ import {
 
 type LoanFormData = {
   id: number;
-  deliveryDate: DateValue;
-  deliveryResponsible: string;
+  deliveryDate: ValidDate;
+  returnDate: ValidDate;
+  endingDate?: ValidDate;
+  deliveryResponsible: number | string;
+  borrowerName?: number;
   email: string;
-  borrowedItem: string;
-  term: number;
-  returnDate: DateValue;
-  receptionResponsible: string;
+  observation: ValidString;
   amount: number;
-  paymentMethod: string;
-  observation: string;
+  paymentMethod: ValidString;
   status: string;
+  borrowedItem: number;
 };
 
 type ValidString = {
@@ -81,23 +81,28 @@ export default function LoanModal({
 }) {
   const [formData, setFormData] = useState<LoanFormData>({
     id: loan?.id || 0,
-    deliveryDate: loan?.deliveryDate
-      ? parseDate(loan.deliveryDate)
-      : parseDate("2024-04-04"),
+    deliveryDate: {
+      String: loan?.deliveryDate.String || "",
+      Valid: loan?.deliveryDate.String !== "",
+    },
     deliveryResponsible: loan?.deliveryResponsible || "",
-    email: loan?.email || "",
-    borrowedItem: loan?.borrowedItem || "",
-    term: loan?.term || 0,
-    returnDate: loan?.returnDate
-      ? parseDate(loan.returnDate)
-      : parseDate("2024-04-04"),
-    receptionResponsible: loan?.receptionResponsible || "",
+    borrowedItem: loan?.borrowedItem || 0,
+    returnDate: {
+      String: loan?.returnDate.String || "",
+      Valid: loan?.returnDate.String !== "",
+    },
     amount: loan?.amount || 0,
-    paymentMethod: loan?.paymentMethod || "",
-    observation: loan?.observation || "",
-    status: loan?.status || "Active",
+    paymentMethod: {
+      String: loan?.paymentMethod.String || "",
+      Valid: loan?.paymentMethod.String !== "",
+    },
+    observation: {
+      String: loan?.observation.String || "",
+      Valid: loan?.observation.String !== "",
+    },
+    status: loan?.status || "",
+    email: "",
   });
-
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
   const [error, setError] = useState<string | null>(null);
   const [groupSelected, setGroupSelected] = useState<string[]>([]);
@@ -123,63 +128,70 @@ export default function LoanModal({
   const onPressNewLoan = () => {
     setFormData({
       id: 0,
-      deliveryDate: parseDate("2024-04-04"),
+      deliveryDate: {
+        String: "2000-01-01",
+        Valid: false,
+      },
       deliveryResponsible: "",
-      email: "",
-      borrowedItem: "",
-      term: 0,
-      returnDate: parseDate("2024-04-04"),
-      receptionResponsible: "",
+      borrowedItem: 0,
+      returnDate: {
+        String: "2000-01-01",
+        Valid: false,
+      },
       amount: 0,
-      paymentMethod: "",
-      observation: "",
-      status: "Active",
+      paymentMethod: {
+        String: "",
+        Valid: false,
+      },
+      observation: {
+        String: "",
+        Valid: false,
+      },
+      status: "",
+      email: "",
     });
     onOpen();
   };
 
+  const onPressEditLoan = () => {
+    if (loan) {
+      console.log("Modificando préstamo:", loan);
+
+      setFormData({
+        id: loan?.id,
+        deliveryDate: {
+          String: loan?.deliveryDate.String,
+          Valid: loan?.deliveryDate.Valid,
+        },
+        deliveryResponsible: loan?.deliveryResponsible,
+        borrowedItem: loan?.borrowedItem,
+        returnDate: {
+          String: loan?.returnDate.String,
+          Valid: loan?.returnDate.Valid,
+        },
+        amount: loan?.amount,
+        paymentMethod: {
+          String: loan?.paymentMethod.String,
+          Valid: loan?.paymentMethod.Valid,
+        },
+        observation: {
+          String: loan?.observation.String,
+          Valid: loan?.observation.Valid,
+        },
+        status: loan?.status,
+        email: "", //TODO: Get user email
+      });
+      onOpen();
+    }
+  };
+
   const handleSaveLoan = async () => {
     try {
-      console.log(formData.email);
-
       const user = await getUserByEmail(formData.email);
 
       if (user) {
-        console.log(user);
-
-        //Sets data format to send to the API
-        const cleanData: SendDataFormat = {
-          //id: user.id,
-          deliveryDate: {
-            String: formData.deliveryDate.toString(),
-            Valid: formData.deliveryDate.toString() !== "",
-          },
-          deliveryResponsible: 2,
-          //email: user.email,
-          borrowerName: user.id,
-          //borrowedItem: formData.borrowedItem,
-          returnDate: {
-            String: formData.returnDate.toString(),
-            Valid: formData.returnDate.toString() !== "",
-          },
-          amount: formData.amount,
-          paymentMethod: {
-            String: formData.paymentMethod,
-            Valid: formData.paymentMethod !== "",
-          },
-          observation: {
-            String: formData.observation,
-            Valid: formData.observation !== "",
-          },
-          status: formData.status,
-          endingDate: {
-            String: formData.returnDate.toString(),
-            Valid: formData.returnDate.toString() !== "",
-          },
-        };
-
         //Envía el préstamo a la API
-        const savedLoanID = await saveLoan(cleanData);
+        const savedLoanID = await saveLoan(formData);
 
         const loanItemData = {
           loan_id: savedLoanID,
@@ -242,27 +254,7 @@ export default function LoanModal({
       <Button
         color="default"
         className="border-primaryGreen-500 bg-primaryGreen-500 text-white mb-4"
-        onPress={() => {
-          if (loan) {
-            console.log("Modificando préstamo:", loan);
-
-            setFormData({
-              id: loan.id,
-              deliveryDate: parseDate(loan.deliveryDate),
-              deliveryResponsible: loan.deliveryResponsible,
-              email: loan.email,
-              borrowedItem: loan.borrowedItem,
-              term: loan.term,
-              returnDate: parseDate(loan.returnDate),
-              receptionResponsible: loan.receptionResponsible,
-              amount: loan.amount,
-              paymentMethod: loan.paymentMethod,
-              observation: loan.observation,
-              status: loan.status,
-            });
-            onOpen();
-          }
-        }}
+        onPress={onPressEditLoan}
       >
         Modificar Préstamo
       </Button>
@@ -294,13 +286,12 @@ export default function LoanModal({
                 <div className="h-5 mb-4 w-full">
                   <Dropdown>
                     <DropdownTrigger>
-                      <Button >Selecciona un Item</Button>
+                      <Button>Selecciona un Item</Button>
                     </DropdownTrigger>
                     <DropdownMenu
                       items={items}
                       onAction={handleSelectionChange}
                     >
-
                       {(item) => (
                         <DropdownItem key={item.id}>
                           <Select
@@ -321,27 +312,25 @@ export default function LoanModal({
                   </Dropdown>
                 </div>
 
-                <Input
-                  label="Plazo (días)"
-                  value={formData.term.toString()}
-                  onChange={(e) =>
-                    setFormData({ ...formData, term: parseInt(e.target.value) })
-                  }
-                />
-
                 <DateInput
                   label="Fecha de entrega"
-                  value={formData.deliveryDate}
+                  value={parseDate(formData.deliveryDate.String)}
                   onChange={(newDate) =>
-                    setFormData({ ...formData, deliveryDate: newDate })
+                    setFormData({
+                      ...formData,
+                      deliveryDate: { String: newDate.toString(), Valid: true },
+                    })
                   }
                 />
 
                 <DateInput
                   label="Fecha de devolución"
-                  value={formData.returnDate}
+                  value={parseDate(formData.deliveryDate.String)}
                   onChange={(newDate) =>
-                    setFormData({ ...formData, returnDate: newDate })
+                    setFormData({
+                      ...formData,
+                      returnDate: { String: newDate.toString(), Valid: true },
+                    })
                   }
                 />
 
@@ -357,16 +346,22 @@ export default function LoanModal({
                 />
                 <Input
                   label="Método de pago"
-                  value={formData.paymentMethod}
+                  value={formData.paymentMethod.String}
                   onChange={(e) =>
-                    setFormData({ ...formData, paymentMethod: e.target.value })
+                    setFormData({
+                      ...formData,
+                      paymentMethod: { String: e.target.value, Valid: true },
+                    })
                   }
                 />
                 <Input
                   label="Observación"
-                  value={formData.observation}
+                  value={formData.observation.String}
                   onChange={(e) =>
-                    setFormData({ ...formData, observation: e.target.value })
+                    setFormData({
+                      ...formData,
+                      observation: { String: e.target.value, Valid: true },
+                    })
                   }
                 />
               </ModalBody>

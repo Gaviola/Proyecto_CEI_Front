@@ -55,3 +55,24 @@ export const saveLoanItem = async (loanItemData) => {
       throw error;
     }
 }
+
+
+export const fetchLoans = async () => {
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/loans`;
+  try {
+    const res = await fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`,
+      },
+    });
+    const data = await res.json();
+
+    console.log("loans:",data);
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching loans:", error);
+  }
+};
