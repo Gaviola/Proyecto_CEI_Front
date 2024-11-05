@@ -26,7 +26,8 @@ export default function SignupPage() {
         localStorage.setItem("sessionToken", data.tokenJWT)
 
         // Redirect 
-        router.push("/user/loans") // TODO
+        if (data.role === "student") router.push("/user/loans") // TODO
+        else toast.error("Error al ingresar") // Only students can register by themselves
 
       } else {
         toast.error("Error al ingresar");

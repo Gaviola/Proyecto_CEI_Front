@@ -27,8 +27,11 @@ export default function LoginPage() {
 
         // Redirect
         if (data.role === "admin") router.push("/admin/loans")
-        if (data.role === "student") router.push("/user/loans") // TODO
+        else if (data.role === "student") router.push("/user/loans") // TODO
+        else toast.error("Error al ingresar")
 
+      } else if (response.status === 401) {
+        toast.error("Mail o contraseña incorrecto");
       } else {
         toast.error("Error al ingresar");
       }
