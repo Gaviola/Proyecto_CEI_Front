@@ -5,7 +5,7 @@ import SeparatorLine from "../components/separatorLine";
 import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-
+import { signIn } from "next-auth/react";
 
 export default function LoginPage() {
   const handleSubmit = async (mail: string, password: string) => {
@@ -41,17 +41,7 @@ export default function LoginPage() {
   };
 
   const handleGoogleSignIn = () => {
-    alert("Google sign in");
-    // signIn(
-    //   {
-    //     providers: [
-    //       GoogleProvider({
-    //         clientId: "207471985952-upkliik44r6pbpqkphc1l2shork5qkvl.apps.googleusercontent.com",
-    //         clientSecret: ""
-    //       })
-    //     ]
-    //   }
-    // );
+    signIn("google");
   }
 
   const router = useRouter();
