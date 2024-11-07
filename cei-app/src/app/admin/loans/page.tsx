@@ -19,6 +19,8 @@ import { CalendarDate, DateValue, parseDate } from "@internationalized/date";
 import { fetchLoans } from "@/services/loans";
 import { getUserByID } from "@/services/users";
 import { User } from "../users/page";
+import { get } from "lodash";
+import { getItemsByType, getEveryItemType } from "@/services/inventory";
 
 type ValidString = {
   String: string;
@@ -41,7 +43,7 @@ export type Loan = {
   amount: number;
   paymentMethod: ValidString;
   status: string;
-  borrowedItem: number;
+  itemType: number;
 };
 
 type TableLoan = {
@@ -58,50 +60,7 @@ type TableLoan = {
   amount: number;
   paymentMethod: string;
   status: string;
-  borrowedItem: number;
-};
-
-const formatDate = (date: ValidDate): string => {
-  if (date && date.Valid) {
-    const isoDate = date.String.split("T")[0]; // Remueve la parte de la zona horaria
-    const parsedDate = parseDate(isoDate); // Analiza solo la fecha
-    const formatedDate = `${parsedDate.day
-      .toString()
-      .padStart(2, "0")}/${parsedDate.month.toString().padStart(2, "0")}/${
-      parsedDate.year
-    }`;
-    return formatedDate;
-  }
-  return "-";
-};
-
-const formatItem = async (item: Loan): Promise<TableLoan> => {
-  const userData: User = await getUserByID(item.borrowerName);
-  const deliveryResponsible: User = await getUserByID(item.deliveryResponsible);
-  //const userData: User = mockUser;
-  //const deliveryResponsible: User = mockUser;
-
-  const borrowerName =
-    (userData?.name || "") + " " + (userData?.lastName || "");
-
-  const formattedItem = {
-    id: item?.id || 0,
-    borrowerName: borrowerName || "",
-    legajo: userData?.legajo || "",
-    email: userData?.email || "",
-    phone: userData?.phone || 0,
-    borrowedItem: 0,
-    deliveryDate: formatDate(item?.deliveryDate) || "",
-    returnDate: formatDate(item?.returnDate) || "",
-    //endingDate: formatDate(item.endingDate),
-    amount: item?.amount || 0,
-    paymentMethod: item?.paymentMethod.String || "",
-    deliveryResponsible: deliveryResponsible?.name || "",
-    observation: item?.observation.String || "",
-    status: item?.status || "",
-  };
-
-  return formattedItem as TableLoan;
+  itemType: number;
 };
 
 const columns = [
@@ -111,7 +70,7 @@ const columns = [
   { key: "legajo", label: "Legajo" },
   { key: "email", label: "Email" },
   { key: "phone", label: "Celular" },
-  { key: "borrowedItem", label: "Elemento prestado" },
+  { key: "itemType", label: "Elemento prestado" },
   { key: "deliveryDate", label: "Fecha de entrega" },
   { key: "returnDate", label: "Fecha de devolución" },
   { key: "amount", label: "Monto ($)" },
@@ -127,11 +86,11 @@ export default function LoansPage() {
   const rowsPerPage = 10;
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
   const [loansTable, setLoansTable] = useState<TableLoan[]>([]);
+  const [loanItems, setLoanItems] = useState<{ id: number; name: string; isGeneric:boolean }[]>([]);
 
   const handleSelectedKey = (key: Selection) => {
     if (key === "all") {
       // Manejo si seleccionas "all"
-      console.log("All items selected");
       setSelectedLoan(null); // Si seleccionas "all", no hay un préstamo específico seleccionado
     } else {
       // Aquí asumimos que key es un Set<Key>
@@ -144,23 +103,36 @@ export default function LoansPage() {
   };
 
   const fetchAndFormatLoans = async () => {
-    setIsLoading(true);
     const data = await fetchLoans();
-    //const data = mockLoans;
     setLoans(data);
-
-    console.log("data:", data);
 
     const formattedLoans = await Promise.all(
       data.map((loan: Loan) => formatItem(loan))
     );
     console.log("formattedLoans:", formattedLoans);
     setLoansTable(formattedLoans);
-    setIsLoading(false);
+  };
+
+
+  const fetchItems = async () => {
+    try {
+      const items = await getEveryItemType();
+      console.log("items fetched:", items);
+      setLoanItems(items);
+    } catch (error) {
+      console.error("Error fetching items:", error);
+    }
   };
 
   useEffect(() => {
-    fetchAndFormatLoans();
+    const fetchData = async () => {
+      setIsLoading(true);
+      await fetchItems(); // Espera a que se carguen los items
+      await fetchAndFormatLoans(); // Luego carga los préstamos y los formatea
+      setIsLoading(false);
+    };
+  
+    fetchData();
   }, []);
 
   const pages = Math.ceil(loans.length / rowsPerPage);
@@ -176,6 +148,50 @@ export default function LoansPage() {
     [key: string]: any;
   }
 
+  const formatDate = (date: ValidDate): string => {
+    if (date && date.Valid) {
+      const isoDate = date.String.split("T")[0]; // Remueve la parte de la zona horaria
+      const parsedDate = parseDate(isoDate); // Analiza solo la fecha
+      const formatedDate = `${parsedDate.day
+        .toString()
+        .padStart(2, "0")}/${parsedDate.month.toString().padStart(2, "0")}/${
+        parsedDate.year
+      }`;
+      return formatedDate;
+    }
+    return "-";
+  };
+
+  const formatItem = async (item: Loan): Promise<TableLoan> => {
+    const userData: User = await getUserByID(item.borrowerName);
+    const deliveryResponsible: User = await getUserByID(item.deliveryResponsible);
+
+    const borrowerName = (userData?.name || "") + " " + (userData?.lastName || "");
+
+    const borrowedItem = loanItems.find((i) => i.id === item.itemType);
+    console.log("items dentro de formatItem:", loanItems);
+    console.log("borrowedItem:", item.itemType);
+
+    const formattedItem = {
+      id: item?.id || 0,
+      borrowerName: borrowerName || "",
+      legajo: userData?.legajo || "",
+      email: userData?.email || "",
+      phone: userData?.phone || 0,
+      itemType: item?.itemType || 0,
+      deliveryDate: formatDate(item?.deliveryDate) || "",
+      returnDate: formatDate(item?.returnDate) || "",
+      //endingDate: formatDate(item.endingDate),
+      amount: item?.amount || 0,
+      paymentMethod: item?.paymentMethod.String || "",
+      deliveryResponsible: deliveryResponsible?.name || "",
+      observation: item?.observation.String || "",
+      status: item?.status || "",
+    };
+
+    return formattedItem as TableLoan;
+  };
+
   return (
     <div className="sm:m-10 m-5 h-screen overflow-x-hidden">
       <h1 className="text-4xl font-bold py-4">Préstamos</h1>
@@ -185,6 +201,7 @@ export default function LoansPage() {
           loans={loans}
           setLoans={setLoans}
           fetchAndFormatLoans={fetchAndFormatLoans}
+          items={loanItems}
         />
       </div>
 

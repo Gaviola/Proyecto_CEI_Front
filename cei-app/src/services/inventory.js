@@ -47,3 +47,28 @@ export const getItemsByType = async (itemType) => {
     throw error;
   }
 }
+
+export const getItemTypeByID = async (itemTypeID) => {
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/item-types/${itemTypeID}`;
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorMessage = await response.text();
+      throw new Error(`Error al obtener el tipo de ítem con ID ${itemTypeID}: ${errorMessage}`);
+    }
+
+    const itemType = await response.json();
+    return itemType;
+  } catch (error) {
+    console.error("Error en getItemTypeByID:", error);
+    throw error;
+  }
+}

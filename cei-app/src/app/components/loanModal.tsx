@@ -15,7 +15,7 @@ import { DateValue, parseDate } from "@internationalized/date";
 import type { PressEvent } from "@react-types/shared";
 import { User } from "../admin/users/page";
 import { form } from "framer-motion/client";
-import { saveLoan, saveLoanItem } from "../../services/loans";
+import { saveLoan, saveLoanItem, updateLoan } from "../../services/loans";
 import { getUserByEmail } from "../../services/users";
 import { getEveryItemType, getItemsByType } from "../../services/inventory";
 import { CheckboxGroup, Checkbox } from "@nextui-org/checkbox";
@@ -77,11 +77,13 @@ export default function LoanModal({
   loans,
   setLoans,
   fetchAndFormatLoans,
+  items,
 }: {
   loan: Loan | null;
   loans: Loan[];
   setLoans: (loans: Loan[]) => void;
   fetchAndFormatLoans: () => void;
+  items: { id: number; name: string }[];
 }) {
   const [formData, setFormData] = useState<LoanFormData>({
     id: loan?.id || 0,
@@ -90,7 +92,7 @@ export default function LoanModal({
       Valid: loan?.deliveryDate.String !== "",
     },
     deliveryResponsible: loan?.deliveryResponsible || "",
-    borrowedItem: loan?.borrowedItem || 0,
+    borrowedItem: loan?.itemType || 0,
     returnDate: {
       String: loan?.returnDate.String || "",
       Valid: loan?.returnDate.String !== "",
@@ -111,20 +113,7 @@ export default function LoanModal({
   const [error, setError] = useState<string | null>(null);
   const [groupSelected, setGroupSelected] = useState<string[]>([]);
   const [selectedItem, setSelectedItem] = useState<Key>();
-  const [items, setItems] = useState<{ id: number; name: string }[]>([]);
-
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const items = await getEveryItemType();
-        console.log(items);
-        setItems(items);
-      } catch (error) {
-        console.error("Error fetching items:", error);
-      }
-    };
-    fetchItems();
-  }, []);
+  //const [items, setItems] = useState<{ id: number; name: string }[]>([]);
 
   const onPressNewLoan = () => {
     setFormData({
@@ -156,18 +145,16 @@ export default function LoanModal({
 
   const onPressEditLoan = () => {
     if (loan) {
-      console.log("Modificando préstamo:", loan);
-
       setFormData({
         id: loan?.id,
         deliveryDate: {
-          String: loan?.deliveryDate.String,
+          String: formatDateYMD(loan?.deliveryDate),
           Valid: loan?.deliveryDate.Valid,
         },
         deliveryResponsible: loan?.deliveryResponsible,
-        borrowedItem: loan?.borrowedItem,
+        borrowedItem: loan?.itemType,
         returnDate: {
-          String: loan?.returnDate.String,
+          String: formatDateYMD(loan?.returnDate),
           Valid: loan?.returnDate.Valid,
         },
         amount: loan?.amount,
@@ -190,7 +177,7 @@ export default function LoanModal({
     try {
       const user = await getUserByEmail(formData.email);
 
-      if (user) {
+      if (user.dni !== 0) {
         const sendData: SendDataFormat = {
           id: formData.id,
           deliveryDate: formData.deliveryDate,
@@ -205,34 +192,25 @@ export default function LoanModal({
           itemType: formData.borrowedItem,
         };
 
-        //Envía el préstamo a la API
-
         const savedLoanID = await saveLoan(sendData);
 
         console.log("Préstamo guardado:", savedLoanID);
 
-        const loanItemData = {
-          loan_id: savedLoanID,
-          item_id: 1,
-        };
-
-        //Envía el item prestado a la API
-        //const savedLoanItemID = await saveLoanItem(loanItemData);
-
         if (formData.email === "") {
-          // Nuevo préstamo
           setLoans([...loans, savedLoanID]);
         } else {
-          // Préstamo existente
           const updatedLoans = loans.map((l) =>
             l.id === savedLoanID.id ? savedLoanID : l
           );
           setLoans(updatedLoans);
         }
+        fetchAndFormatLoans();
+      } else {
+        // Mostrar mensaje al usuario de que no se encontró el email
+        setError("No se encontró un usuario con ese email.");
+        alert("No se encontró un usuario con ese email.");
       }
 
-      // Cierra el modal
-      fetchAndFormatLoans();
       onClose();
     } catch (error) {
       console.error("Error saving loan:", error);
@@ -242,11 +220,59 @@ export default function LoanModal({
     }
   };
 
+  const handleUpdateLoan = async () => {
+    if (loan) {
+      const updatedLoan = {
+        ...loan,
+        deliveryDate: formData.deliveryDate,
+        returnDate: formData.returnDate,
+        endingDate: formData.returnDate,
+        observation: formData.observation,
+        amount: formData.amount,
+        paymentMethod: formData.paymentMethod,
+        itemType: formData.borrowedItem,
+      }
+      await updateLoan(updatedLoan);
+      fetchAndFormatLoans();
+    }
+    
+    onClose();
+  }
+
+  const handleFinalizeLoan = async () => {
+    if (loan) {
+      const updatedLoan = {
+        ...loan,
+        status: "Finalizado",
+        endingDate: { String: new Date().toISOString(), Valid: true },
+      };
+      await updateLoan(updatedLoan);
+      fetchAndFormatLoans();
+    }
+
+    
+    onClose();
+  };
+
   // const items = [
   //   { key: "mate", value: "Mate" },
   //   { key: "termo", value: "Termo" },
   //   { key: "zapatilla", value: "Zapatilla" },
   // ];
+
+  const formatDateYMD = (date: ValidDate): string => {
+    if (date && date.Valid) {
+      const isoDate = date.String.split("T")[0]; // Remueve la parte de la zona horaria
+      const parsedDate = parseDate(isoDate); // Analiza solo la fecha
+      const formatedDate = `${parsedDate.year}-${parsedDate.month
+        .toString()
+        .padStart(2, "0")}-${parsedDate.day.toString().padStart(2, "0")}`;
+      return formatedDate;
+    }
+    return "-";
+  };
+
+
 
   return (
     <>
@@ -296,7 +322,6 @@ export default function LoanModal({
                     items={items}
                     onChange={(e) => {
                       setSelectedItem(e.target.value);
-                      console.log(e.target.value);
                       setFormData({
                         ...formData,
                         borrowedItem: Number(e.target.value),
@@ -366,9 +391,30 @@ export default function LoanModal({
                 />
               </ModalBody>
               <ModalFooter>
+                {/* {error && <p className="text-red-500">{error}</p>} */}
+                {formData?.id === 0 && ( 
                 <Button color="primary" variant="flat" onPress={handleSaveLoan}>
                   Guardar
                 </Button>
+                )}
+                {formData?.id !== 0 && (
+                  <Button
+                    color="success"
+                    variant="flat"
+                    onPress={handleFinalizeLoan}
+                  >
+                    Finalizar Préstamo
+                  </Button>
+                )}
+                {formData?.id !== 0 && (
+                  <Button
+                    color="primary" variant="flat"
+                    onPress={handleUpdateLoan}
+                  >
+                    Actualizar
+                  </Button>
+                )}
+
                 <Button color="danger" variant="flat" onPress={onClose}>
                   Cerrar
                 </Button>

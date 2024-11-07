@@ -76,3 +76,32 @@ export const fetchLoans = async () => {
     console.error("Error fetching loans:", error);
   }
 };
+
+
+export const updateLoan = async (loanData) => {
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/loans/${loanData.id}`;
+
+  console.log("Actualizando préstamo:", loanData);
+  try {
+    const response = await fetch(apiUrl, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`,
+      },
+      body: JSON.stringify(loanData),
+    });
+
+    if (!response.ok) {
+      const errorMessage = await response.text();
+      throw new Error(`Error al actualizar el préstamo: ${errorMessage}`);
+    }
+
+    console.log("Préstamo actualizado con éxito");
+    //return response.json();
+
+  } catch (error) {
+    console.error("Error en updateLoan:", error);
+    throw error;
+  }
+}
