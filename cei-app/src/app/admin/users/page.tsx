@@ -13,8 +13,10 @@ export interface User {
   name: string;
   lastName: string;
   idNumber: string;
+  legajo: string;
   registrationDate: DateValue | undefined;
   email: string;
+  phone: string;
 }
 
 export default function UsersPage() {
