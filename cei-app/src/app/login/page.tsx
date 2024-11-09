@@ -42,42 +42,15 @@ export default function LoginPage() {
 
 
 
-  const handleGoogleSignIn = async () => {
-    const result = await signIn("google", { redirect: false });
+  const handleGoogleSignIn = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    // Prevent page reload (default behavior of button click)
+    e.preventDefault();
+    const result = await signIn("google", { callbackUrl: "http://localhost:3000/google-login" });
     if (result?.error) {
       toast.error("Error al iniciar sesión con Google");
       return;
     }
 
-    const session = await getSession();
-    if (session?.accessToken) {
-      try {
-        const response = await fetch("http://192.168.194.158:8080/login/user", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            username: session.accessToken,
-          }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          localStorage.setItem("sessionToken", data.tokenJWT);
-
-          // Redirect
-          if (data.role === "admin") router.push("/admin/loans")
-          else if (data.role === "student") router.push("/user/loans") // TODO
-          else toast.error("Error al ingresar")
-
-        } else {
-          toast.error("Error al iniciar sesión con Google");
-        }
-      } catch (error) {
-        toast.error("Error al iniciar sesión con Google");
-      }
-    }
   };
 
   const router = useRouter();
@@ -105,7 +78,7 @@ export default function LoginPage() {
         {/* Google  */}
         <button
           className="border-1 border-gray-300 rounded-lg px-4 py-1 bg-black text-white w-full my-3"
-          onClick={handleGoogleSignIn}
+          onClick={(e) => handleGoogleSignIn(e)}
         >
           Iniciar con Google
         </button>

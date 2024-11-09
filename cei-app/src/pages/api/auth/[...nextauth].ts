@@ -16,6 +16,11 @@ export default NextAuth({
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID || "",
             clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+            authorization: {
+                params: {
+                    prompt: "select_account", // Always show the account selection screen
+                },
+            },
         }),
     ],
     callbacks: {
@@ -32,5 +37,7 @@ export default NextAuth({
             return session;
         },
     },
-    // Add more configuration options as needed
+    pages: {
+        signIn: "/google-login",
+    },
 });
