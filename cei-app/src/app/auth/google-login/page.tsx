@@ -15,7 +15,7 @@ const LoadingPage = () => {
       toast.error("Error al iniciar sesión con Google");
       // Wait 2 seconds before redirecting to login page
       setTimeout(() => {
-        router.push("/login");
+        router.push("/auth/login");
       }, 2000);
     }
     const fetchData = async () => {

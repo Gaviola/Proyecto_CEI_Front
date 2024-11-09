@@ -1,7 +1,7 @@
 'use client';
 import React from "react";
-import MailPasswordInput from "../components/mailPasswordInput";
-import SeparatorLine from "../components/separatorLine";
+import MailPasswordInput from "../../components/mailPasswordInput";
+import SeparatorLine from "../../components/separatorLine";
 import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
@@ -45,7 +45,7 @@ export default function LoginPage() {
   const handleGoogleSignIn = async (e: React.MouseEvent<HTMLButtonElement>) => {
     // Prevent page reload (default behavior of button click)
     e.preventDefault();
-    const result = await signIn("google", { callbackUrl: "http://localhost:3000/google-login" });
+    const result = await signIn("google", { callbackUrl: "http://localhost:3000/auth/google-login" });
     if (result?.error) {
       toast.error("Error al iniciar sesión con Google");
       return;
@@ -57,7 +57,7 @@ export default function LoginPage() {
 
   const handleRegister = () => {
     // Push to registration page
-    router.push("/sign-up");
+    router.push("/auth/sign-up");
   }
 
   return (

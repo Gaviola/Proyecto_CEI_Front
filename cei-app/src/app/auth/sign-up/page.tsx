@@ -1,6 +1,6 @@
 'use client';
 import React from "react";
-import MailPasswordInput from "../components/mailPasswordInput";
+import MailPasswordInput from "../../components/mailPasswordInput";
 import { toast, ToastContainer } from "react-toastify";
 import { useRouter } from "next/navigation";
 import 'react-toastify/dist/ReactToastify.css';
