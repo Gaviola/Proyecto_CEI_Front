@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSession } from "next-auth/react";
 import { toast, ToastContainer } from "react-toastify";
+import { logInGoogle } from "@/services/auth";
 import 'react-toastify/dist/ReactToastify.css';
 
 
@@ -22,15 +23,7 @@ const LoadingPage = () => {
       let session = await getSession();
       if (session && isMounted) {
         try {
-          const response = await fetch("http://192.168.194.158:8080/login/user", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              username: session.accessToken,
-            }),
-          });
+          const response = await logInGoogle(session.accessToken);
 
           if (response.ok) {
             const data = await response.json();
