@@ -6,20 +6,14 @@ import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { signIn, getSession } from "next-auth/react";
+import { logInMailAndPassword } from "@/services/auth"
 
 export default function LoginPage() {
+  const router = useRouter();
+
   const handleSubmit = async (mail: string, password: string) => {
     try {
-      const response = await fetch("http://192.168.194.158:8080/login/user", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: mail,
-          password: password,
-        }),
-      });
+      const response = await logInMailAndPassword(mail, password);
 
       if (response.ok) {
         const data = await response.json();
@@ -45,15 +39,13 @@ export default function LoginPage() {
   const handleGoogleSignIn = async (e: React.MouseEvent<HTMLButtonElement>) => {
     // Prevent page reload (default behavior of button click)
     e.preventDefault();
-    const result = await signIn("google", { callbackUrl: "http://localhost:3000/auth/google-login" });
+    const result = await signIn("google", { callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/google-login` });
     if (result?.error) {
       toast.error("Error al iniciar sesión con Google");
       return;
     }
-
   };
 
-  const router = useRouter();
 
   const handleRegister = () => {
     // Push to registration page
