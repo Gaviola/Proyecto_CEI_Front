@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
-import Header from "./components/header";
-import Navbar from "./components/navbar";
+import "../globals.css";
+import Header from "../components/header";
+import Navbar from "../components/navbar";
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} max-h-screen overflow-hidden`}>
-        {<Header />}
+        {<Header showDropdown={true} />}
         <div className="flex flex-row w-screen">
           <div className=" sm:block hidden">{<Navbar />}</div>
           {children}
