@@ -5,7 +5,7 @@ import SeparatorLine from "../components/separatorLine";
 import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 
 export default function LoginPage() {
   const handleSubmit = async (mail: string, password: string) => {
@@ -40,9 +40,45 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    signIn("google");
-  }
+
+
+  const handleGoogleSignIn = async () => {
+    const result = await signIn("google", { redirect: false });
+    if (result?.error) {
+      toast.error("Error al iniciar sesión con Google");
+      return;
+    }
+
+    const session = await getSession();
+    if (session?.accessToken) {
+      try {
+        const response = await fetch("http://192.168.194.158:8080/login/user", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: session.accessToken,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          localStorage.setItem("sessionToken", data.tokenJWT);
+
+          // Redirect
+          if (data.role === "admin") router.push("/admin/loans")
+          else if (data.role === "student") router.push("/user/loans") // TODO
+          else toast.error("Error al ingresar")
+
+        } else {
+          toast.error("Error al iniciar sesión con Google");
+        }
+      } catch (error) {
+        toast.error("Error al iniciar sesión con Google");
+      }
+    }
+  };
 
   const router = useRouter();
 
@@ -55,6 +91,7 @@ export default function LoginPage() {
     <div className="flex justify-center items-center w-full min-h-screen">
       <div className="h-auto <p-4 rounded text-center" style={{ width: '500px' }}>
         <ToastContainer />
+
         {/* Mail & Password Login */}
         <h1 className="font-bold text-xl">Iniciá sesión</h1>
         <p>Ingresá tu correo y contraseña para ingresar</p>

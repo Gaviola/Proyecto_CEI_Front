@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "./components/header";
 import Navbar from "./components/navbar";
+import SessionProviderWrapper from "./components/sessionProviderWrapper";
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -20,11 +21,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} max-h-screen overflow-hidden`}>
-        {<Header />}
-        <div className="flex flex-row w-screen">
-          <div className=" sm:block hidden">{<Navbar />}</div>
-          {children}
-        </div>
+        <SessionProviderWrapper >
+          {<Header />}
+          <div className="flex flex-row w-screen">
+            <div className=" sm:block hidden">{<Navbar />}</div>
+            {children}
+          </div>
+        </SessionProviderWrapper>
       </body>
     </html>
   );
