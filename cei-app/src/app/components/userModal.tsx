@@ -59,7 +59,7 @@ export default function UserModal({
   };
 
   const onPressUpdateUser = async () => {
-    if(user) {
+    if (user) {
       const updatedUser = {
         ...user,
         name: formData.name,
@@ -69,7 +69,19 @@ export default function UserModal({
         email: formData.email,
         phone: formData.phone,
         school: formData.school,
-      }
+      };
+      await updateUser(updatedUser);
+      fetchUsers();
+    }
+    onClose();
+  };
+
+  const onPressVerifyUser = async () => {
+    if (user) {
+      const updatedUser = {
+        ...user,
+        is_verified: true,
+      };
       await updateUser(updatedUser);
       fetchUsers();
     }
@@ -176,16 +188,31 @@ export default function UserModal({
             />
           </ModalBody>
           <ModalFooter>
-          {formData?.id == 0 && (
-            <Button color="primary" variant="flat" onPress={onPressSaveUser}>
-              Guardar
-            </Button>
-          )}
             {formData?.id !== 0 && (
-              <Button color="primary" variant="flat" onPress={onPressUpdateUser}>
+              <Button
+                color="secondary"
+                variant="flat"
+                onPress={onPressVerifyUser}
+              >
+                Verificado
+              </Button>
+            )}
+
+            {formData?.id == 0 && (
+              <Button color="primary" variant="flat" onPress={onPressSaveUser}>
+                Guardar
+              </Button>
+            )}
+            {formData?.id !== 0 && (
+              <Button
+                color="primary"
+                variant="flat"
+                onPress={onPressUpdateUser}
+              >
                 Actualizar
               </Button>
             )}
+
             <Button color="danger" variant="flat" onPress={onClose}>
               Cerrar
             </Button>
