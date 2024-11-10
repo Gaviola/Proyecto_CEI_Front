@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { jwtLogin } from "@/services/auth";
 
-export default function AdminLayout({
+export default function UserLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -30,7 +30,7 @@ export default function AdminLayout({
         if (response.ok) {
           const data = await response.json();
 
-          if (data.role !== "admin") {
+          if (data.role !== "student") {
             handleError();
           }
 
@@ -54,7 +54,6 @@ export default function AdminLayout({
 
   return (
     <div className="flex flex-row w-screen">
-      <div className=" sm:block hidden">{<Navbar />}</div>
       {children}
     </div>
   );

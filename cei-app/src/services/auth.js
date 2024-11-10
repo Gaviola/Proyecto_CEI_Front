@@ -46,3 +46,25 @@ export const logInGoogle = async (tokenId) => {
   // TODO
   return await fetch("");
 };
+
+export const jwtLogin = async (jwt) => {
+  try {
+    // TODO fetch to the backend to validate the token
+    const response = await new Promise((resolve) => {
+      resolve({
+        ok: true,
+        json: () => {
+          return {
+            email: "pepe@gmailcom",
+            username: "pepe",
+            role: "admin",
+          };
+        },
+      });
+    });
+
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
