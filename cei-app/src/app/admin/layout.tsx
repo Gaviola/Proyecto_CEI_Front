@@ -11,7 +11,7 @@ export default function AdminLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { setUser } = useUser();
+  const { user, setUser } = useUser();
   const router = useRouter();
 
   useEffect(() => {
@@ -49,8 +49,11 @@ export default function AdminLayout({
       }
     };
 
-    fetchUserData();
-  }, [setUser, router]);
+    if (!user) {
+      fetchUserData();
+    }
+
+  }, [setUser, router, user]);
 
   return (
     <div className="flex flex-row w-screen">
