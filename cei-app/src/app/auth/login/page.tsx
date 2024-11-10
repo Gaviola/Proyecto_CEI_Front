@@ -1,29 +1,40 @@
 'use client';
 import React from "react";
-import MailPasswordInput from "../components/mailPasswordInput";
-import SeparatorLine from "../components/separatorLine";
+import MailPasswordInput from "../../components/mailPasswordInput";
+import SeparatorLine from "../../components/separatorLine";
 import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-
+import { signIn, getSession } from "next-auth/react";
+import { logInMailAndPassword } from "@/services/auth"
+import { useUser } from '@/app/context/userContext';
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { setUser } = useUser();
+
   const handleSubmit = async (mail: string, password: string) => {
     try {
-      const response = await fetch("http://localhost:8080/login/user", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: mail,
-          password: password,
-        }),
-      });
+      const response = await logInMailAndPassword(mail, password);
 
       if (response.ok) {
         const data = await response.json();
-        // TODO
+        localStorage.setItem("sessionToken", data.tokenJWT)
+
+        // Redirect
+        if (data.role === "admin") router.push("/admin/loans")
+        else if (data.role === "student") router.push("/user/loans") // TODO
+        else toast.error("Error al ingresar")
+
+        // Update user context
+        setUser({
+          name: data.username,
+          email: data.email,
+          role: data.role
+        });
+
+      } else if (response.status === 401) {
+        toast.error("Mail o contraseña incorrecto");
       } else {
         toast.error("Error al ingresar");
       }
@@ -32,31 +43,29 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    alert("Google sign in");
-    // signIn(
-    //   {
-    //     providers: [
-    //       GoogleProvider({
-    //         clientId: "207471985952-upkliik44r6pbpqkphc1l2shork5qkvl.apps.googleusercontent.com",
-    //         clientSecret: ""
-    //       })
-    //     ]
-    //   }
-    // );
-  }
 
-  const router = useRouter();
+
+  const handleGoogleSignIn = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    // Prevent page reload (default behavior of button click)
+    e.preventDefault();
+    const result = await signIn("google", { callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/google-login` });
+    if (result?.error) {
+      toast.error("Error al iniciar sesión con Google");
+      return;
+    }
+  };
+
 
   const handleRegister = () => {
     // Push to registration page
-    router.push("/sign-up");
+    router.push("/auth/sign-up");
   }
 
   return (
     <div className="flex justify-center items-center w-full min-h-screen">
       <div className="h-auto <p-4 rounded text-center" style={{ width: '500px' }}>
         <ToastContainer />
+
         {/* Mail & Password Login */}
         <h1 className="font-bold text-xl">Iniciá sesión</h1>
         <p>Ingresá tu correo y contraseña para ingresar</p>
@@ -70,7 +79,7 @@ export default function LoginPage() {
         {/* Google  */}
         <button
           className="border-1 border-gray-300 rounded-lg px-4 py-1 bg-black text-white w-full my-3"
-          onClick={handleGoogleSignIn}
+          onClick={(e) => handleGoogleSignIn(e)}
         >
           Iniciar con Google
         </button>

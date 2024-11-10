@@ -5,16 +5,14 @@ import {
   DropdownItem,
   DropdownSection,
 } from "@nextui-org/dropdown";
-import { Button, ButtonGroup } from "@nextui-org/button";
-import { TbUserEdit } from "react-icons/tb";
-import { GoGear } from "react-icons/go";
 import { FaCircleUser } from "react-icons/fa6";
 import { Avatar } from "@nextui-org/avatar";
-import { color } from "framer-motion";
-import { LuUsers } from "react-icons/lu";
-import { MdOutlineInventory, MdOutlineShoppingCart } from "react-icons/md";
+import { User, useUser } from "@/app/context/userContext";
 
-export default function DropdownOptions() {
+
+
+export default function DropdownOptions({ user }: { user: User }) {
+  const { setUser } = useUser();
   return (
     <Dropdown>
       <DropdownTrigger>
@@ -23,59 +21,31 @@ export default function DropdownOptions() {
         </Avatar>
       </DropdownTrigger>
       <DropdownMenu aria-label="Dropdown menu">
-        <DropdownItem showDivider key="admin" description="Admin">
-          {<h2 className="font-bold">Gabriel</h2>}
-        </DropdownItem>
-
-        <DropdownSection title={"Vistas"} className="block sm:hidden">
-          <DropdownItem
-            key="usuarios"
-            href="/users"
-            startContent={<LuUsers className="size-5 text-zinc-500" />}
-          >
-            {<h2 className="">Usuarios</h2>}
+        <DropdownSection>
+          <DropdownItem key="name" isReadOnly>
+            {user.name && <h2 className="font-bold">{user.name}</h2>}
           </DropdownItem>
 
-          <DropdownItem
-            key="inventario"
-            startContent={
-              <MdOutlineShoppingCart className="size-5 text-zinc-500" />
-            }
-          >
-            {<h2 className="">Inventario</h2>}
-          </DropdownItem>
-          <DropdownItem
-            showDivider
-            key="prestamos"
-            href="/loans"
-            startContent={
-              <MdOutlineInventory className="size-5 text-zinc-500" />
-            }
-          >
-            {<h2 className="">Préstamos</h2>}
+          <DropdownItem key="email" isReadOnly>
+            {user.email && <h2>{user.email}</h2>}
           </DropdownItem>
         </DropdownSection>
 
-        <DropdownSection title={"Opciones"}>
-          <DropdownItem
-            key="edit"
-            startContent={<TbUserEdit className="size-5 text-zinc-500" />}
-          >
-            Editar Usuario
-          </DropdownItem>
-          <DropdownItem
-            showDivider
-            key="config"
-            startContent={<GoGear className="size-5 text-zinc-500" />}
-          >
-            Configuración
-          </DropdownItem>
-        </DropdownSection>
         <DropdownSection>
           <DropdownItem
             key="logout"
             color="danger"
             className="text-danger-500 self-center"
+            onClick={() => {
+              // remove user from context
+              setUser(null);
+
+              // Clear local storage
+              localStorage.removeItem("sessionToken");
+
+              // Redirect to login page
+              window.location.href = "/auth/login";
+            }}
           >
             Cerrar Sesión
           </DropdownItem>

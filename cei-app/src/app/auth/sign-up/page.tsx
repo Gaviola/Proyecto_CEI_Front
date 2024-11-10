@@ -1,33 +1,42 @@
 'use client';
 import React from "react";
-import MailPasswordInput from "../components/mailPasswordInput";
+import MailPasswordInput from "../../components/mailPasswordInput";
 import { toast, ToastContainer } from "react-toastify";
+import { useRouter } from "next/navigation";
+import { signUp } from "@/services/auth";
+import { useUser } from "@/app/context/userContext";
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function SignupPage() {
+  const router = useRouter();
+  const { setUser } = useUser();
+
   const handleSubmit = async (mail: string, password: string) => {
     try {
-      const response = await fetch("http://localhost:8080/login/user", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: mail,
-          password: password,
-        }),
-      });
+      const response = await signUp(mail, password);
 
       if (response.ok) {
         const data = await response.json();
-        // TODO
+        localStorage.setItem("sessionToken", data.tokenJWT)
+
+        // Redirect 
+        if (data.role === "student") router.push("/user/loans") // TODO
+        else toast.error("Error al ingresar") // Only students can register by themselves
+
+        // Update user context
+        setUser({
+          name: data.username,
+          email: data.email,
+          role: data.role
+        });
+
       } else {
         toast.error("Error al ingresar");
       }
     } catch (error) {
       toast.error("Error al ingresar");
     }
-  }; // TODO
+  };
 
 
   return (
