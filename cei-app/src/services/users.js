@@ -66,3 +66,29 @@ export const getUserByID = async (id) => {
     throw error;
   }
 };
+
+export const fetchUsers = async () => {
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/users`;
+  try {
+    const response = await fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error al obtener los usuarios: ${errorText}`);
+    }
+
+    const users = await response.json();
+
+    console.log("fetchUsers", users);
+    return users;
+  } catch (error) {
+    console.error("Error en fetchUsers:", error);
+    throw error;
+  }
+}

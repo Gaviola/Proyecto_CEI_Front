@@ -29,7 +29,7 @@ export default function UserModal({
     idNumber: user?.idNumber || "",
     legajo: user?.legajo || "",
     email: user?.email || "",
-    cellphone: user?.cellphone || "",
+    phone: user?.phone || "",
     registrationDate: user?.registrationDate || parseDate("2024-04-04"),
   });
 
@@ -43,7 +43,7 @@ export default function UserModal({
       idNumber: "",
       legajo: "",
       email: "",
-      cellphone: "",
+      phone: "",
       registrationDate: parseDate("2024-04-04"),
     });
     onOpen();
@@ -151,9 +151,9 @@ export default function UserModal({
             />
             <Input
               label="Celular"
-              value={formData.cellphone}
+              value={formData.phone}
               onChange={(e) =>
-                setFormData({ ...formData, cellphone: e.target.value })
+                setFormData({ ...formData, phone: e.target.value })
               }
             />
             <DateInput

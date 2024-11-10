@@ -1,12 +1,13 @@
 "use client";
 import UsersTable from "../../components/usersTable";
-import { useEffect, useState } from "react";
-import { debounce } from "lodash";
+import { useEffect, useState, useRef } from "react";
+import { debounce, set } from "lodash";
 import { Input } from "postcss";
 import InputSearcher from "../../components/inputSearcher";
 import { Selection } from "@react-types/shared";
 import UserModal from "../../components/userModal";
 import { DateValue } from "@internationalized/date";
+import { fetchUsers } from "@/services/users";
 
 export interface User {
   id: number;
@@ -24,27 +25,43 @@ export default function UsersPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchContent, setSearchContent] = useState("");
+  const hasMounted = useRef(false);
+
+  const searchUsers = async (searchContent: string) => {
+    debounce(() => setLoading(true), 100);
+    const res = await fetch(
+      "http://localhost:3000/api/users?content=" + searchContent
+    );
+    const data = await res.json();
+    setUsers(data.users);
+    setLoading(false);
+  };
 
   useEffect(() => {
-    async function fetchUsers(searchContent: string) {
-      debounce(() => setLoading(true), 100);
-      const res = await fetch(
-        "http://localhost:3000/api/users?content=" + searchContent
-      );
-      const data = await res.json();
-      setUsers(data.users);
+    if (hasMounted.current) {
+      searchUsers(searchContent);
+    } else {
+      hasMounted.current = true;
+    }
+  }, [searchContent]);
+
+  useEffect(() => {
+    async function getUsers() {
+      setLoading(true);
+      const res = await fetchUsers();
+      console.log("Users:",res);
+      setUsers(res);
       setLoading(false);
     }
-
-    fetchUsers(searchContent);
-  }, [searchContent]);
+    getUsers();
+  }, [])
 
   const handleSelectedKey = (key: Selection) => {
       // Aquí asumimos que key es un Set<Key>
       const selectedKey = Array.from(key)[0]; // Obtiene la primera clave del conjunto (si hay alguna)
-      const selectedLoan = users.find((user) => user.idNumber.toString() === selectedKey) || null;
+      const selectedUser = users.find((user) => user.id === selectedKey) || null;
   
-      setSelectedUser(selectedLoan); // Actualiza el estado del préstamo seleccionado
+      setSelectedUser(selectedUser); // Actualiza el estado del préstamo seleccionado
   };
 
   return (
@@ -52,7 +69,6 @@ export default function UsersPage() {
       <h1 className="text-2xl font-bold text-gray-900 m-2">Usuarios</h1>
 
 
-      {/* TODO: Fetch users from API */}
       {/* TODO: Search bar */}
       {/* TODO: Pagination */}
       {/* TODO: Modal to create new user */}
