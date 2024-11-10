@@ -7,9 +7,11 @@ import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { signIn, getSession } from "next-auth/react";
 import { logInMailAndPassword } from "@/services/auth"
+import { useUser } from '@/app/context/userContext';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { setUser } = useUser();
 
   const handleSubmit = async (mail: string, password: string) => {
     try {
@@ -23,6 +25,13 @@ export default function LoginPage() {
         if (data.role === "admin") router.push("/admin/loans")
         else if (data.role === "student") router.push("/user/loans") // TODO
         else toast.error("Error al ingresar")
+
+        // Update user context
+        setUser({
+          name: data.username,
+          email: data.email,
+          role: data.role
+        });
 
       } else if (response.status === 401) {
         toast.error("Mail o contraseña incorrecto");

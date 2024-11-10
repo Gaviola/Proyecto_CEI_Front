@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "./components/header";
+import { UserProvider } from './context/userContext';
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -19,10 +20,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} max-h-screen overflow-hidden`}>
-        {<Header showDropdown={false} />}
-        <div className="flex flex-row w-screen">
-          {children}
-        </div>
+        <UserProvider>
+          {<Header />}
+          <div className="flex flex-row w-screen">
+            {children}
+          </div>
+        </UserProvider>
       </body>
     </html>
   );

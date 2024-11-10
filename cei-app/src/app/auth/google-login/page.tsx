@@ -4,11 +4,13 @@ import { useRouter } from "next/navigation";
 import { getSession } from "next-auth/react";
 import { toast, ToastContainer } from "react-toastify";
 import { logInGoogle } from "@/services/auth";
+import { useUser } from "@/app/context/userContext";
 import 'react-toastify/dist/ReactToastify.css';
 
 
 const LoadingPage = () => {
   const router = useRouter();
+  const { setUser } = useUser();
 
   useEffect(() => {
     let isMounted = true;
@@ -30,13 +32,16 @@ const LoadingPage = () => {
             localStorage.setItem("sessionToken", data.tokenJWT);
 
             // Redirect based on user role
-            if (data.role === "admin") {
-              router.push("/admin/loans");
-            } else if (data.role === "student") {
-              router.push("/user/loans");
-            } else {
-              toast.error("Error al ingresar");
-            }
+            if (data.role === "admin") { router.push("/admin/loans"); }
+            else if (data.role === "student") { router.push("/user/loans"); }
+            else { toast.error("Error al ingresar"); }
+
+            // Update user context
+            setUser({
+              name: data.username,
+              email: data.email,
+              role: data.role
+            });
           } else {
             handleError();
           }
