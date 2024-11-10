@@ -12,29 +12,42 @@ import { fetchUsers } from "@/services/users";
 export interface User {
   id: number;
   name: string;
-  lastName: string;
-  idNumber: string;
-  legajo: string;
-  registrationDate: DateValue | undefined;
+  lastname: string;
+  dni: number;
+  student_id: number;
   email: string;
-  phone: string;
+  phone: number;
+  is_verified: boolean;
+  creator_id: number;
+  role: string;
+  school: string;
 }
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchContent, setSearchContent] = useState("");
   const hasMounted = useRef(false);
 
-  const searchUsers = async (searchContent: string) => {
-    debounce(() => setLoading(true), 100);
-    const res = await fetch(
-      "http://localhost:3000/api/users?content=" + searchContent
-    );
-    const data = await res.json();
-    setUsers(data.users);
-    setLoading(false);
+  const searchUsers = (searchContent: string) => {
+    setLoading(true);
+    debounce(() => {
+      const filtered = users.filter(
+        (user) =>
+          (user.name &&
+            user.name.toLowerCase().includes(searchContent.toLowerCase())) ||
+          (user.lastname &&
+            user.lastname
+              .toLowerCase()
+              .includes(searchContent.toLowerCase())) ||
+          (user.email &&
+            user.email.toLowerCase().includes(searchContent.toLowerCase()))
+      );
+      setFilteredUsers(filtered);
+      setLoading(false);
+    }, 100)();
   };
 
   useEffect(() => {
@@ -45,29 +58,28 @@ export default function UsersPage() {
     }
   }, [searchContent]);
 
+  async function getUsers() {
+    setLoading(true);
+    const res = await fetchUsers();
+    setUsers(res);
+    setFilteredUsers(res);
+    setLoading(false);
+  }
+
   useEffect(() => {
-    async function getUsers() {
-      setLoading(true);
-      const res = await fetchUsers();
-      console.log("Users:",res);
-      setUsers(res);
-      setLoading(false);
-    }
     getUsers();
-  }, [])
+  }, []);
 
   const handleSelectedKey = (key: Selection) => {
-      // Aquí asumimos que key es un Set<Key>
-      const selectedKey = Array.from(key)[0]; // Obtiene la primera clave del conjunto (si hay alguna)
-      const selectedUser = users.find((user) => user.id === selectedKey) || null;
-  
-      setSelectedUser(selectedUser); // Actualiza el estado del préstamo seleccionado
+    // Aquí asumimos que key es un Set<Key>
+    const selectedKey = Array.from(key)[0]; // Obtiene la primera clave del conjunto (si hay alguna)
+    const selectedUser = users.find((user) => user.id == selectedKey) || null;
+    setSelectedUser(selectedUser);
   };
 
   return (
     <main className="py-5 px-7 w-full">
       <h1 className="text-2xl font-bold text-gray-900 m-2">Usuarios</h1>
-
 
       {/* TODO: Search bar */}
       {/* TODO: Pagination */}
@@ -82,10 +94,10 @@ export default function UsersPage() {
         placeholder="Buscar usuario"
       />
 
-      <UserModal user={selectedUser} users={users} setUsers={setUsers} />
+      <UserModal user={selectedUser} users={users} setUsers={setUsers} fetchUsers={getUsers} />
 
       <UsersTable
-        users={users}
+        users={filteredUsers}
         isLoading={loading}
         onSelectionChange={handleSelectedKey}
       />

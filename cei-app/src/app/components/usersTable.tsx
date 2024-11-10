@@ -72,7 +72,7 @@ export default function UsersTable({ users, isLoading, onSelectionChange }: { us
           loadingContent={<Spinner color="current" />}
         >
           {(item) => (
-            <TableRow key={item.idNumber}>
+            <TableRow key={item.id}>
               {(columnKey) => (
                 <TableCell> {getKeyValue(item, columnKey)} </TableCell>
               )}
