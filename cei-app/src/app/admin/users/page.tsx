@@ -1,55 +1,86 @@
 "use client";
 import UsersTable from "../../components/usersTable";
-import { useEffect, useState } from "react";
-import { debounce } from "lodash";
+import { useEffect, useState, useRef } from "react";
+import { debounce, set } from "lodash";
 import { Input } from "postcss";
 import InputSearcher from "../../components/inputSearcher";
 import { Selection } from "@react-types/shared";
 import UserModal from "../../components/userModal";
+import { DateValue } from "@internationalized/date";
+import { fetchUsers } from "@/services/users";
 
 export interface User {
   id: number;
   name: string;
-  lastName: string;
-  idNumber: string;
-  registrationDate: string;
+  lastname: string;
+  dni: number;
+  student_id: number;
   email: string;
+  phone: number;
+  is_verified: boolean;
+  creator_id: number;
+  role: string;
+  school: string;
 }
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchContent, setSearchContent] = useState("");
+  const hasMounted = useRef(false);
+
+  const searchUsers = (searchContent: string) => {
+    setLoading(true);
+    debounce(() => {
+      const filtered = users.filter(
+        (user) =>
+          (user.name &&
+            user.name.toLowerCase().includes(searchContent.toLowerCase())) ||
+          (user.lastname &&
+            user.lastname
+              .toLowerCase()
+              .includes(searchContent.toLowerCase())) ||
+          (user.email &&
+            user.email.toLowerCase().includes(searchContent.toLowerCase()))
+      );
+      setFilteredUsers(filtered);
+      setLoading(false);
+    }, 100)();
+  };
 
   useEffect(() => {
-    async function fetchUsers(searchContent: string) {
-      debounce(() => setLoading(true), 100);
-      const res = await fetch(
-        "http://localhost:3000/api/users?content=" + searchContent
-      );
-      const data = await res.json();
-      setUsers(data.users);
-      setLoading(false);
+    if (hasMounted.current) {
+      searchUsers(searchContent);
+    } else {
+      hasMounted.current = true;
     }
-
-    fetchUsers(searchContent);
   }, [searchContent]);
 
+  async function getUsers() {
+    setLoading(true);
+    const res = await fetchUsers();
+    setUsers(res);
+    setFilteredUsers(res);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    getUsers();
+  }, []);
+
   const handleSelectedKey = (key: Selection) => {
-      // Aquí asumimos que key es un Set<Key>
-      const selectedKey = Array.from(key)[0]; // Obtiene la primera clave del conjunto (si hay alguna)
-      const selectedLoan = users.find((user) => user.idNumber.toString() === selectedKey) || null;
-  
-      setSelectedUser(selectedLoan); // Actualiza el estado del préstamo seleccionado
+    // Aquí asumimos que key es un Set<Key>
+    const selectedKey = Array.from(key)[0]; // Obtiene la primera clave del conjunto (si hay alguna)
+    const selectedUser = users.find((user) => user.id == selectedKey) || null;
+    setSelectedUser(selectedUser);
   };
 
   return (
     <main className="py-5 px-7 w-full">
       <h1 className="text-2xl font-bold text-gray-900 m-2">Usuarios</h1>
 
-
-      {/* TODO: Fetch users from API */}
       {/* TODO: Search bar */}
       {/* TODO: Pagination */}
       {/* TODO: Modal to create new user */}
@@ -63,10 +94,10 @@ export default function UsersPage() {
         placeholder="Buscar usuario"
       />
 
-      <UserModal user={selectedUser} users={users} setUsers={setUsers} />
+      <UserModal user={selectedUser} users={users} setUsers={setUsers} fetchUsers={getUsers} />
 
       <UsersTable
-        users={users}
+        users={filteredUsers}
         isLoading={loading}
         onSelectionChange={handleSelectedKey}
       />

@@ -10,23 +10,33 @@ import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { useEffect, useState } from "react";
 import { User } from "../admin/users/page";
+import { DateInput } from "@nextui-org/date-input";
+import { DateValue, parseDate } from "@internationalized/date";
+import { createUser, updateUser } from "@/services/users";
 
 export default function UserModal({
   user,
   users,
   setUsers,
+  fetchUsers,
 }: {
   user: User | null;
   users: User[];
   setUsers: (users: User[]) => void;
+  fetchUsers: () => void;
 }) {
   const [formData, setFormData] = useState<User>({
     id: user?.id || 0,
     name: user?.name || "",
-    lastName: user?.lastName || "",
-    idNumber: user?.idNumber || "",
+    lastname: user?.lastname || "",
+    dni: user?.dni || 0,
+    student_id: user?.student_id || 0,
     email: user?.email || "",
-    registrationDate: user?.registrationDate || "",
+    phone: user?.phone || 0,
+    is_verified: user?.is_verified || false,
+    creator_id: user?.creator_id || 0,
+    role: user?.role || "",
+    school: user?.school || "",
   });
 
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
@@ -35,32 +45,54 @@ export default function UserModal({
     setFormData({
       id: 0,
       name: "",
-      lastName: "",
-      idNumber: "",
+      lastname: "",
+      dni: 0,
+      student_id: 0,
       email: "",
-      registrationDate: "",
+      phone: 0,
+      is_verified: false,
+      creator_id: 0,
+      role: "student",
+      school: "",
     });
     onOpen();
   };
 
-  const onPressEditUser = (user: User) => {
-    setFormData(user);
-    onOpen();
+  const onPressUpdateUser = async () => {
+    if (user) {
+      const updatedUser = {
+        ...user,
+        name: formData.name,
+        lastname: formData.lastname,
+        dni: formData.dni,
+        student_id: formData.student_id,
+        email: formData.email,
+        phone: formData.phone,
+        school: formData.school,
+      };
+      await updateUser(updatedUser);
+      fetchUsers();
+    }
+    onClose();
   };
 
-  const onPressSaveUser = () => {
-    if (formData.id === 0) {
-      setUsers([...users, formData]);
-    } else {
-      setUsers(
-        users.map((u) => {
-          if (u.id === formData.id) {
-            return formData;
-          }
-          return u;
-        })
-      );
+  const onPressVerifyUser = async () => {
+    if (user) {
+      const updatedUser = {
+        ...user,
+        is_verified: true,
+      };
+      await updateUser(updatedUser);
+      fetchUsers();
     }
+    onClose();
+  };
+
+  const onPressSaveUser = async () => {
+    console.log("creando usuario:", formData);
+    await createUser(formData);
+
+    fetchUsers();
     onClose();
   };
 
@@ -71,7 +103,7 @@ export default function UserModal({
   return (
     <>
       <Button
-        onClick={onPressNewUser}
+        onPress={onPressNewUser}
         color="default"
         className="border-primaryGreen-500 bg-primaryGreen-500 text-white mr-4 mb-4"
       >
@@ -82,9 +114,7 @@ export default function UserModal({
         color="default"
         className="border-primaryGreen-500 bg-primaryGreen-500 text-white mb-4"
         onPress={() => {
-          console.log("Modificando préstamo:", user);
           if (user) {
-            console.log("Modificando préstamo:", user);
             setFormData(user);
             onOpen();
           }
@@ -108,24 +138,38 @@ export default function UserModal({
           </ModalHeader>
           <ModalBody>
             <Input
-              label="Name"
+              label="Nombre"
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
             />
             <Input
-              label="Lastname"
-              value={formData.lastName}
+              label="Apellido"
+              value={formData.lastname}
               onChange={(e) =>
-                setFormData({ ...formData, lastName: e.target.value })
+                setFormData({ ...formData, lastname: e.target.value })
               }
             />
             <Input
-              label="ID Number"
-              value={formData.idNumber}
+              label="DNI"
+              value={formData.dni.toString()}
               onChange={(e) =>
-                setFormData({ ...formData, idNumber: e.target.value })
+                setFormData({ ...formData, dni: Number(e.target.value) })
+              }
+            />
+            <Input
+              label="Facultad"
+              value={formData.school}
+              onChange={(e) =>
+                setFormData({ ...formData, school: e.target.value })
+              }
+            />
+            <Input
+              label="Legajo"
+              value={formData.student_id.toString()}
+              onChange={(e) =>
+                setFormData({ ...formData, student_id: Number(e.target.value) })
               }
             />
             <Input
@@ -135,18 +179,40 @@ export default function UserModal({
                 setFormData({ ...formData, email: e.target.value })
               }
             />
-
             <Input
-              label="Registration Date"
-              value={formData.registrationDate}
+              label="Celular"
+              value={formData.phone.toString()}
               onChange={(e) =>
-                setFormData({ ...formData, registrationDate: e.target.value })
+                setFormData({ ...formData, phone: Number(e.target.value) })
               }
             />
           </ModalBody>
           <ModalFooter>
-            <Button onClick={onClose}>Cancel</Button>
-            <Button onClick={onPressSaveUser}>Save</Button>
+            {formData?.id !== 0 && (
+              <Button
+                color="secondary"
+                variant="flat"
+                onPress={onPressVerifyUser}
+              >
+                Verificado
+              </Button>
+            )}
+
+            {formData?.id == 0 && (
+              <Button color="primary" variant="flat" onPress={onPressSaveUser}>
+                Guardar
+              </Button>
+            )}
+            {formData?.id !== 0 && (
+              <Button
+                color="primary"
+                variant="flat"
+                onPress={onPressUpdateUser}
+              >
+                Actualizar
+              </Button>
+            )}
+
             <Button color="danger" variant="flat" onPress={onClose}>
               Cerrar
             </Button>

@@ -8,101 +8,271 @@ import {
 } from "@nextui-org/modal";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
-import { useEffect, useState } from "react";
+import { Key, useEffect, useState } from "react";
 import { Loan } from "../admin/loans/page";
+import { DateInput } from "@nextui-org/date-input";
+import { DateValue, parseDate } from "@internationalized/date";
+import type { PressEvent } from "@react-types/shared";
+import { User } from "../admin/users/page";
+import { form } from "framer-motion/client";
+import { saveLoan, saveLoanItem, updateLoan } from "../../services/loans";
+import { getUserByEmail } from "../../services/users";
+import { getEveryItemType, getItemsByType } from "../../services/inventory";
+import { CheckboxGroup, Checkbox } from "@nextui-org/checkbox";
+import { CustomCheckbox } from "./customCheckbox";
+import {
+  Select,
+  SelectSection,
+  SelectItem,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from "@nextui-org/react";
+import { set } from "lodash";
+import { send } from "process";
+
+type LoanFormData = {
+  id: number;
+  deliveryDate: ValidDate;
+  returnDate: ValidDate;
+  endingDate?: ValidDate;
+  deliveryResponsible: number | string;
+  borrowerName?: number;
+  email: string;
+  observation: ValidString;
+  amount: number;
+  paymentMethod: ValidString;
+  status: string;
+  borrowedItem: number;
+};
+
+type ValidString = {
+  String: string;
+  Valid: boolean;
+};
+
+type ValidDate = {
+  String: string;
+  Valid: boolean;
+};
+
+type SendDataFormat = {
+  id: number;
+  deliveryDate: ValidDate;
+  returnDate: ValidDate;
+  endingDate?: ValidDate;
+  deliveryResponsible: number | string;
+  borrowerName?: number;
+  //email: string;
+  observation: ValidString;
+  amount: number;
+  paymentMethod: ValidString;
+  status: string;
+  itemType: number;
+};
 
 export default function LoanModal({
   loan,
   loans,
   setLoans,
+  fetchAndFormatLoans,
+  items,
 }: {
   loan: Loan | null;
   loans: Loan[];
   setLoans: (loans: Loan[]) => void;
+  fetchAndFormatLoans: () => void;
+  items: { id: number; name: string }[];
 }) {
-  const [formData, setFormData] = useState<Loan>({
+  const [formData, setFormData] = useState<LoanFormData>({
     id: loan?.id || 0,
-    deliveryDate: loan?.deliveryDate || "",
+    deliveryDate: {
+      String: loan?.deliveryDate.String || "",
+      Valid: loan?.deliveryDate.String !== "",
+    },
     deliveryResponsible: loan?.deliveryResponsible || "",
-    borrowerName: loan?.borrowerName || "",
-    fileNumber: loan?.fileNumber || "",
-    cellphone: loan?.cellphone || "",
-    borrowedItem: loan?.borrowedItem || "",
-    clarification: loan?.clarification || "",
-    term: loan?.term || 0,
-    returnDate: loan?.returnDate || "",
-    receptionResponsible: loan?.receptionResponsible || "",
+    borrowedItem: loan?.itemType || 0,
+    returnDate: {
+      String: loan?.returnDate.String || "",
+      Valid: loan?.returnDate.String !== "",
+    },
     amount: loan?.amount || 0,
-    paymentMethod: loan?.paymentMethod || "",
-    observation: loan?.observation || "",
+    paymentMethod: {
+      String: loan?.paymentMethod.String || "",
+      Valid: loan?.paymentMethod.String !== "",
+    },
+    observation: {
+      String: loan?.observation.String || "",
+      Valid: loan?.observation.String !== "",
+    },
+    status: loan?.status || "",
+    email: "",
   });
-
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+  const [error, setError] = useState<string | null>(null);
+  const [groupSelected, setGroupSelected] = useState<string[]>([]);
+  const [selectedItem, setSelectedItem] = useState<Key>();
+  //const [items, setItems] = useState<{ id: number; name: string }[]>([]);
 
   const onPressNewLoan = () => {
     setFormData({
       id: 0,
-      deliveryDate: "",
-      deliveryResponsible: "",
-      borrowerName: "",
-      fileNumber: "",
-      cellphone: "",
-      borrowedItem: "",
-      clarification: "",
-      term: 0,
-      returnDate: "",
-      receptionResponsible: "",
+      deliveryDate: {
+        String: "2000-01-01",
+        Valid: false,
+      },
+      deliveryResponsible: 1,
+      borrowedItem: 0,
+      returnDate: {
+        String: "2000-01-01",
+        Valid: false,
+      },
       amount: 0,
-      paymentMethod: "",
-      observation: "",
+      paymentMethod: {
+        String: "",
+        Valid: false,
+      },
+      observation: {
+        String: "",
+        Valid: false,
+      },
+      status: "Active",
+      email: "",
     });
     onOpen();
   };
 
-  useEffect(() => {
+  const onPressEditLoan = () => {
     if (loan) {
-      setFormData(loan);
+      setFormData({
+        id: loan?.id,
+        deliveryDate: {
+          String: formatDateYMD(loan?.deliveryDate),
+          Valid: loan?.deliveryDate.Valid,
+        },
+        deliveryResponsible: loan?.deliveryResponsible,
+        borrowedItem: loan?.itemType,
+        returnDate: {
+          String: formatDateYMD(loan?.returnDate),
+          Valid: loan?.returnDate.Valid,
+        },
+        amount: loan?.amount,
+        paymentMethod: {
+          String: loan?.paymentMethod.String,
+          Valid: loan?.paymentMethod.Valid,
+        },
+        observation: {
+          String: loan?.observation.String,
+          Valid: loan?.observation.Valid,
+        },
+        status: loan?.status,
+        email: "", //TODO: Get user email
+      });
+      onOpen();
     }
-  }, [loan]);
+  };
 
-  const handleSaveLoan = () => {
-    // Si el ID es 0, es un nuevo préstamo
-    if (formData.id === 0) {
-      // Asigna un nuevo ID, asumiendo que los IDs son números consecutivos
-      const newId = loans.length > 0 ? loans[loans.length - 1].id + 1 : 1;
-      const newLoan = { ...formData, id: newId };
-      setLoans([...loans, newLoan]);
-    } else {
-      // Actualiza el préstamo existente
-      const updatedLoans = loans.map((l) =>
-        l.id === formData.id ? formData : l
+  const handleSaveLoan = async () => {
+    try {
+      const user = await getUserByEmail(formData.email);
+
+      if (user.dni !== 0) {
+        const sendData: SendDataFormat = {
+          id: formData.id,
+          deliveryDate: formData.deliveryDate,
+          returnDate: formData.returnDate,
+          endingDate: formData.returnDate,
+          deliveryResponsible: formData.deliveryResponsible,
+          borrowerName: user.id,
+          observation: formData.observation,
+          amount: formData.amount,
+          paymentMethod: formData.paymentMethod,
+          status: formData.status,
+          itemType: formData.borrowedItem,
+        };
+
+        const savedLoanID = await saveLoan(sendData);
+
+        console.log("Préstamo guardado:", savedLoanID);
+
+        if (formData.email === "") {
+          setLoans([...loans, savedLoanID]);
+        } else {
+          const updatedLoans = loans.map((l) =>
+            l.id === savedLoanID.id ? savedLoanID : l
+          );
+          setLoans(updatedLoans);
+        }
+        fetchAndFormatLoans();
+      } else {
+        // Mostrar mensaje al usuario de que no se encontró el email
+        setError("No se encontró un usuario con ese email.");
+        alert("No se encontró un usuario con ese email.");
+      }
+
+      onClose();
+    } catch (error) {
+      console.error("Error saving loan:", error);
+      setError(
+        "Hubo un problema al guardar el préstamo. Por favor, inténtalo de nuevo."
       );
-      setLoans(updatedLoans);
     }
-    // Cierra el modal
+  };
+
+  const handleUpdateLoan = async () => {
+    if (loan) {
+      const updatedLoan = {
+        ...loan,
+        deliveryDate: formData.deliveryDate,
+        returnDate: formData.returnDate,
+        endingDate: formData.returnDate,
+        observation: formData.observation,
+        amount: formData.amount,
+        paymentMethod: formData.paymentMethod,
+        itemType: formData.borrowedItem,
+      }
+      await updateLoan(updatedLoan);
+      fetchAndFormatLoans();
+    }
+    
+    onClose();
+  }
+
+  const handleFinalizeLoan = async () => {
+    if (loan) {
+      const updatedLoan = {
+        ...loan,
+        status: "Finalizado",
+        endingDate: { String: new Date().toISOString(), Valid: true },
+      };
+      await updateLoan(updatedLoan);
+      fetchAndFormatLoans();
+    }
+
+    
     onClose();
   };
 
-  // Función para guardar un préstamo en la base de datos
-  const saveLoan = async (loanData: Loan) => {
-    try {
-      const response = await fetch('/api/loans', {
-        method: loanData.id ? 'PUT' : 'POST', // PUT para modificar, POST para nuevo
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(loanData),
-      });
-      if (!response.ok) {
-        throw new Error('Error al guardar el préstamo');
-      }
-      // Manejar la respuesta (actualizar la UI o notificar éxito)
-      console.log("Préstamo guardado con éxito");
-    } catch (error) {
-      console.error(error);
+  // const items = [
+  //   { key: "mate", value: "Mate" },
+  //   { key: "termo", value: "Termo" },
+  //   { key: "zapatilla", value: "Zapatilla" },
+  // ];
+
+  const formatDateYMD = (date: ValidDate): string => {
+    if (date && date.Valid) {
+      const isoDate = date.String.split("T")[0]; // Remueve la parte de la zona horaria
+      const parsedDate = parseDate(isoDate); // Analiza solo la fecha
+      const formatedDate = `${parsedDate.year}-${parsedDate.month
+        .toString()
+        .padStart(2, "0")}-${parsedDate.day.toString().padStart(2, "0")}`;
+      return formatedDate;
     }
+    return "-";
   };
-  
+
+
 
   return (
     <>
@@ -117,14 +287,7 @@ export default function LoanModal({
       <Button
         color="default"
         className="border-primaryGreen-500 bg-primaryGreen-500 text-white mb-4"
-        onPress={() => {
-          console.log("Modificando préstamo:", loan);
-          if (loan) {
-            console.log("Modificando préstamo:", loan);
-            setFormData(loan);
-            onOpen();
-          }
-        }}
+        onPress={onPressEditLoan}
       >
         Modificar Préstamo
       </Button>
@@ -145,63 +308,58 @@ export default function LoanModal({
               </ModalHeader>
               <ModalBody>
                 <Input
-                  label="Nombre Alumno/Prestatario"
-                  placeholder="Nombre Alumno/Prestatario"
-                  value={formData.borrowerName}
+                  label="Email"
+                  type="email"
+                  value={formData.email}
                   onChange={(e) =>
-                    setFormData({ ...formData, borrowerName: e.target.value })
+                    setFormData({ ...formData, email: e.target.value })
                   }
                 />
-                <Input
-                  label="Legajo"
-                  placeholder="Legajo"
-                  value={formData.fileNumber}
-                  onChange={(e) =>
-                    setFormData({ ...formData, fileNumber: e.target.value })
+
+                <div className="h-5 mb-9 w-full">
+                  <Select
+                    label="Seleccioná un item"
+                    items={items}
+                    onChange={(e) => {
+                      setSelectedItem(e.target.value);
+                      setFormData({
+                        ...formData,
+                        borrowedItem: Number(e.target.value),
+                      });
+                    }}
+                  >
+                    {(item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.name}
+                      </SelectItem>
+                    )}
+                  </Select>
+                  {/* {item.name} */}
+                </div>
+
+                <DateInput
+                  label="Fecha de entrega"
+                  value={parseDate(formData.deliveryDate.String)}
+                  onChange={(newDate) =>
+                    setFormData({
+                      ...formData,
+                      deliveryDate: { String: newDate.toString(), Valid: true },
+                    })
                   }
                 />
-                <Input
-                  label="Celular"
-                  placeholder="Celular"
-                  value={formData.cellphone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, cellphone: e.target.value })
-                  }
-                />
-                <Input
-                  placeholder="Elemento prestado"
-                  label="Elemento prestado"
-                  value={formData.borrowedItem}
-                  onChange={(e) =>
-                    setFormData({ ...formData, borrowedItem: e.target.value })
-                  }
-                />
-                <Input
-                  placeholder="Aclaración"
-                  label="Aclaración"
-                  value={formData.clarification}
-                  onChange={(e) =>
-                    setFormData({ ...formData, clarification: e.target.value })
-                  }
-                />
-                <Input
-                  placeholder="Plazo (días)"
-                  label="Plazo (días)"
-                  value={formData.term.toString()}
-                  onChange={(e) =>
-                    setFormData({ ...formData, term: parseInt(e.target.value) })
-                  }
-                />
-                <Input
-                  placeholder="Fecha de devolución"
+
+                <DateInput
                   label="Fecha de devolución"
-                  value={formData.returnDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, returnDate: e.target.value })
+                  value={parseDate(formData.returnDate.String)}
+                  onChange={(newDate) =>
+                    setFormData({
+                      ...formData,
+                      returnDate: { String: newDate.toString(), Valid: true },
+                    })
                   }
                 />
+
                 <Input
-                  placeholder="Monto ($)"
                   label="Monto ($)"
                   value={formData.amount.toString()}
                   onChange={(e) =>
@@ -212,24 +370,51 @@ export default function LoanModal({
                   }
                 />
                 <Input
-                  placeholder="Método de pago"
                   label="Método de pago"
-                  value={formData.paymentMethod}
+                  value={formData.paymentMethod.String}
                   onChange={(e) =>
-                    setFormData({ ...formData, paymentMethod: e.target.value })
+                    setFormData({
+                      ...formData,
+                      paymentMethod: { String: e.target.value, Valid: true },
+                    })
                   }
                 />
                 <Input
-                  placeholder="Observación"
                   label="Observación"
-                  value={formData.observation}
+                  value={formData.observation.String}
                   onChange={(e) =>
-                    setFormData({ ...formData, observation: e.target.value })
+                    setFormData({
+                      ...formData,
+                      observation: { String: e.target.value, Valid: true },
+                    })
                   }
                 />
               </ModalBody>
               <ModalFooter>
-                <Button onPress={handleSaveLoan}>Guardar</Button>
+                {/* {error && <p className="text-red-500">{error}</p>} */}
+                {formData?.id === 0 && ( 
+                <Button color="primary" variant="flat" onPress={handleSaveLoan}>
+                  Guardar
+                </Button>
+                )}
+                {formData?.id !== 0 && (
+                  <Button
+                    color="success"
+                    variant="flat"
+                    onPress={handleFinalizeLoan}
+                  >
+                    Finalizar Préstamo
+                  </Button>
+                )}
+                {formData?.id !== 0 && (
+                  <Button
+                    color="primary" variant="flat"
+                    onPress={handleUpdateLoan}
+                  >
+                    Actualizar
+                  </Button>
+                )}
+
                 <Button color="danger" variant="flat" onPress={onClose}>
                   Cerrar
                 </Button>
