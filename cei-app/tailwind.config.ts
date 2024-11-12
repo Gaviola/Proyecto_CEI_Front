@@ -6,10 +6,14 @@ const config: Config = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./node_modules/@nextui-org/theme/dist/components/(avatar|button|dropdown|dropdown-menu|dropdown-trigger|button|ripple|spinner|menu|divider|popover|modal|table|pagination|input|date-input|checkbox|chip|select|select-item).js"
+    "./node_modules/@nextui-org/theme/dist/components/(avatar|button|dropdown|dropdown-menu|dropdown-trigger|button|ripple|spinner|menu|divider|popover|modal|table|pagination|input|date-input|checkbox|chip|select|select-item|card).js"
   ],
   theme: {
     extend: {
+      screens: {
+        xl: "1281px",
+        md: "769px",
+      },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":

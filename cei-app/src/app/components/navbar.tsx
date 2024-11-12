@@ -60,12 +60,12 @@ export default function Navbar() {
           }`}
           onClick={() => handleOptionClick("Inventario")}
         >
-          <a href="#">
+          <a href="/admin/inventory">
             <MdOutlineInventory className="size-8" />
           </a>
 
           <a
-            href="#"
+            href="/admin/inventory"
             className={
               isOpen
                 ? "block transform translate-x-0 duration-500"

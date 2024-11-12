@@ -4,7 +4,6 @@ import "./globals.css";
 import Header from "./components/header";
 import { UserProvider } from './context/userContext';
 
-
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
