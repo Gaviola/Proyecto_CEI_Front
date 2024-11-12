@@ -46,7 +46,6 @@ export const signUp = async (email, password) => {
 
 export const logInGoogle = async (tokenId, email) => {
   try {
-    // TODO: send the tokenId
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/login/google`,
       {
