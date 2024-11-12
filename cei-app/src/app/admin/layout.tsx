@@ -49,7 +49,7 @@ export default function AdminLayout({
       }
     };
 
-    if (!user) {
+    if (!user || user.role !== "admin") {
       fetchUserData();
     }
 

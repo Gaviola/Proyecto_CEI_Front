@@ -23,7 +23,7 @@ const columns = [
 export default function UsersTable({ users, isLoading, onSelectionChange }: { users: User[], isLoading: boolean, onSelectionChange: (keys: Selection) => void }) {
   const rowsPerPage = 10;
   const [page, setPage] = React.useState(1);
-  const pages = Math.ceil(users.length / rowsPerPage);
+  const pages = Math.ceil(users?.length / rowsPerPage);
 
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
@@ -49,7 +49,7 @@ export default function UsersTable({ users, isLoading, onSelectionChange }: { us
               classNames={{}}
             />
           </div>
-        } 
+        }
         isHeaderSticky
         selectionMode="single"
         defaultSelectedKeys={["2"]}
