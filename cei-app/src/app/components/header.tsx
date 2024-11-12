@@ -2,9 +2,11 @@
 import React from "react";
 import Image from "next/image";
 import DropdownOptions from "./dropdownOptions";
-import Navbar from "./navbar";
+import { useUser } from "../context/userContext";
 
 export default function Header() {
+  const { user } = useUser();
+
   return (
     <header className="flex w-screen h-24 items-center justify-between p-4  bg-[#84BC3C] shadow-md">
       <Image
@@ -15,7 +17,7 @@ export default function Header() {
         className=""
       />
 
-      <DropdownOptions />
+      {user && <DropdownOptions user={user} />}
     </header>
   );
 }
