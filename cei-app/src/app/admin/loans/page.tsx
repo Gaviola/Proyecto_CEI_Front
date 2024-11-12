@@ -86,7 +86,7 @@ export default function LoansPage() {
   const rowsPerPage = 10;
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
   const [loansTable, setLoansTable] = useState<TableLoan[]>([]);
-  const [loanItems, setLoanItems] = useState<{ id: number; name: string; isGeneric:boolean }[]>([]);
+  const [loanItems, setLoanItems] = useState<{ id: number; name: string; isGeneric: boolean }[]>([]);
 
   const handleSelectedKey = (key: Selection) => {
     if (key === "all") {
@@ -131,11 +131,11 @@ export default function LoansPage() {
       await fetchAndFormatLoans(); // Luego carga los préstamos y los formatea
       setIsLoading(false);
     };
-  
+
     fetchData();
   }, []);
 
-  const pages = Math.ceil(loans.length / rowsPerPage);
+  const pages = Math.ceil(loans?.length / rowsPerPage);
 
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
@@ -154,9 +154,8 @@ export default function LoansPage() {
       const parsedDate = parseDate(isoDate); // Analiza solo la fecha
       const formatedDate = `${parsedDate.day
         .toString()
-        .padStart(2, "0")}/${parsedDate.month.toString().padStart(2, "0")}/${
-        parsedDate.year
-      }`;
+        .padStart(2, "0")}/${parsedDate.month.toString().padStart(2, "0")}/${parsedDate.year
+        }`;
       return formatedDate;
     }
     return "-";

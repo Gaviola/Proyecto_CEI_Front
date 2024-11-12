@@ -49,7 +49,7 @@ export default function UserLayout({
       }
     };
 
-    if (!user) {
+    if (!user || user.role !== "student") {
       fetchUserData();
     }
 

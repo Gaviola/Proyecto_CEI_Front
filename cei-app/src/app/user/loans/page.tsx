@@ -6,14 +6,16 @@ import {
     useDisclosure,
 } from "@nextui-org/modal";
 import { useEffect, useState } from "react";
-import { getEveryItemType } from "@/services/inventory";
+import { getItemsForUser } from "@/services/inventory";
 import { itemsData } from "@/data/inventory";
-import InventoryModal from "@/app/components/inventoryModal";
+import NewUserLoanModal from "@/app/components/newUserLoanModal";
 
 export type Item = {
     id: number;
-    name: string;
+    item_type: string;
     is_generic: boolean;
+    img: string;
+    price: number;
 };
 
 export type ItemCard = {
@@ -24,24 +26,20 @@ export type ItemCard = {
 }
 
 
-export default function InventoryPage() {
+export default function LoansPage() {
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
     const [itemsList, setItemsList] = useState<Item[]>([]);
     const [itemsCard, setItemsCard] = useState<ItemCard[]>([]);
     const [selectedItem, setSelectedItem] = useState<Item>();
 
-    // const [formData, setFormData] = useState({
-    //   title:
-    // })
-
     const fetchItems = async () => {
-        const items = await getEveryItemType();
+        const items = await getItemsForUser();
         console.log(items);
         const formatedItems = items.map((item: Item) => ({
             id: item.id,
-            name: item.name,
+            name: item.item_type,
             img: itemsData.find((data: ItemCard) => data.id == item.id)?.img,
-            price: itemsData.find((data: ItemCard) => data.id == item.id)?.price,
+            price: item.price,
         }));
         setItemsList(items);
         setItemsCard(formatedItems);
@@ -55,15 +53,12 @@ export default function InventoryPage() {
         const selectedItem = itemsList.find((i) => i.id == item.id);
         setSelectedItem(selectedItem);
         onOpen();
-        console.log('Selected item:', selectedItem);
     };
-
-
 
     return (
         <div className="sm:m-10 m-5 h-screen overflow-x-hidden">
             <h1 className="text-4xl font-bold py-4">Inventario</h1>
-            <InventoryModal item={selectedItem} onClose={onClose} onOpen={onOpen} onOpenChange={onOpenChange} isOpen={isOpen} fetchItems={fetchItems} />
+            <NewUserLoanModal item={selectedItem} onClose={onClose} onOpen={onOpen} onOpenChange={onOpenChange} isOpen={isOpen} fetchItems={fetchItems} />
             <div className="gap-2 sm:gap-2 md:gap-3  grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 sm:max-h-[60vh]   ">
                 {itemsCard.map((item, index) => (
                     <Card
