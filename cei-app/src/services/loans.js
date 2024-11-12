@@ -100,3 +100,29 @@ export const updateLoan = async (loanData) => {
     throw error;
   }
 };
+
+export const createUserLoan = async (loanData) => {
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/user/createLoan`;
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("sessionToken")}`,
+      },
+      body: JSON.stringify(loanData),
+    });
+
+    if (!response.ok) {
+      const errorMessage = await response.text();
+      throw new Error(`Error al crear el préstamo: ${errorMessage}`);
+    }
+
+    console.log("Préstamo creado con éxito");
+    return response.json();
+  } catch (error) {
+    console.error("Error en createUserLoan:", error);
+    throw error;
+  }
+};

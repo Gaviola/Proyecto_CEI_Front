@@ -63,7 +63,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex justify-center items-center w-full min-h-screen">
-      <div className="h-auto <p-4 rounded text-center" style={{ width: '500px' }}>
+      <div className="h-auto p-4 rounded text-center" style={{ width: '500px' }}>
         <ToastContainer />
 
         {/* Mail & Password Login */}
