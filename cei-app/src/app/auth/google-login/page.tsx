@@ -25,7 +25,8 @@ const LoadingPage = () => {
       let session = await getSession();
       if (session && isMounted) {
         try {
-          const response = await logInGoogle(session.accessToken);
+          const response = await logInGoogle(session.accessToken, session.user?.email);
+          console.log(response);
 
           if (response.ok) {
             const data = await response.json();
@@ -34,7 +35,7 @@ const LoadingPage = () => {
             // Redirect based on user role
             if (data.role === "admin") { router.push("/admin/loans"); }
             else if (data.role === "student") { router.push("/user/loans"); }
-            else { toast.error("Error al ingresar"); }
+            else { handleError(); }
 
             // Update user context
             setUser({
@@ -46,6 +47,7 @@ const LoadingPage = () => {
             handleError();
           }
         } catch (error) {
+          console.error("Error al iniciar sesión con Google", error);
           handleError();
         }
       }
@@ -56,7 +58,7 @@ const LoadingPage = () => {
     return () => {
       isMounted = false;
     };
-  }, [router]);
+  }, [router, setUser]);
 
   return (
     <div className="flex justify-center items-center w-full min-h-screen">

@@ -1,3 +1,5 @@
+import { method } from "lodash";
+
 export const logInMailAndPassword = async (email, password) => {
   try {
     const response = await fetch(
@@ -42,26 +44,39 @@ export const signUp = async (email, password) => {
   }
 };
 
-export const logInGoogle = async (tokenId) => {
-  // TODO
-  return await fetch("");
+export const logInGoogle = async (tokenId, email) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/login/google`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+        }),
+      }
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const jwtLogin = async (jwt) => {
   try {
     // TODO fetch to the backend to validate the token
-    const response = await new Promise((resolve) => {
-      resolve({
-        ok: true,
-        json: () => {
-          return {
-            email: "pepe@gmailcom",
-            username: "pepe",
-            role: "admin",
-          };
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/login/JWT`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwt}`,
         },
-      });
-    });
+      }
+    );
 
     return response;
   } catch (error) {
