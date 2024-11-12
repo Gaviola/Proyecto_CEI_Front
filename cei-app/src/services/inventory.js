@@ -24,9 +24,7 @@ export const getEveryItemType = async () => {
 };
 
 export const getItemsByType = async (itemType) => {
-  const apiUrl = `${
-    process.env.NEXT_PUBLIC_API_URL
-  }/admin/items/available/${encodeURIComponent(itemType)}`;
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/items/available/${itemType}`;
 
   try {
     const response = await fetch(apiUrl, {
@@ -44,6 +42,8 @@ export const getItemsByType = async (itemType) => {
       );
     }
 
+   
+ 
     const items = await response.json();
     return items;
   } catch (error) {
@@ -87,7 +87,7 @@ export const createItemType = async (itemType) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`,
+        Authorization: `Bearer ${localStorage.getItem("sessionToken")}`,
       },
       body: JSON.stringify(itemType),
     });
@@ -114,7 +114,7 @@ export const updateItemType = async (itemType) => {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`,
+        Authorization: `Bearer ${localStorage.getItem("sessionToken")}`,
       },
       body: JSON.stringify(itemType),
     });
@@ -140,7 +140,7 @@ export const deleteItemType = async (itemTypeID) => {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`,
+        Authorization: `Bearer ${localStorage.getItem("sessionToken")}`,
       },
     });
 
