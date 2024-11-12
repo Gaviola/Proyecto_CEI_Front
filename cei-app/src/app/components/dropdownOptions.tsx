@@ -8,6 +8,8 @@ import {
 import { FaCircleUser } from "react-icons/fa6";
 import { Avatar } from "@nextui-org/avatar";
 import { User, useUser } from "@/app/context/userContext";
+import { MdOutlineInventory, MdOutlineShoppingCart } from "react-icons/md";
+import { LuUsers } from "react-icons/lu";
 
 
 
@@ -30,6 +32,41 @@ export default function DropdownOptions({ user }: { user: User }) {
             {user.email && <h2>{user.email}</h2>}
           </DropdownItem>
         </DropdownSection>
+
+        {user.role === "admin" ? (
+          <DropdownSection title={"Vistas"} className="block sm:hidden">
+            <DropdownItem
+              key="usuarios"
+              href="/admin/users"
+              startContent={<LuUsers className="size-5 text-zinc-500" />}
+            >
+              {<h2 className="">Usuarios</h2>}
+            </DropdownItem>
+
+            <DropdownItem
+              key="inventario"
+              href="/admin/inventory"
+              startContent={
+                <MdOutlineShoppingCart className="size-5 text-zinc-500" />
+              }
+            >
+              {<h2 className="">Inventario</h2>}
+            </DropdownItem>
+            <DropdownItem
+              showDivider
+              key="prestamos"
+              href="/admin/loans"
+              startContent={
+                <MdOutlineInventory className="size-5 text-zinc-500" />
+              }
+            >
+              {<h2 className="">Préstamos</h2>}
+            </DropdownItem>
+          </DropdownSection>
+        ) :
+          // If user is not admin, do not show any options
+          <DropdownItem></DropdownItem>
+        }
 
         <DropdownSection>
           <DropdownItem
