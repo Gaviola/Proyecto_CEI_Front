@@ -73,7 +73,7 @@ export const fetchUsers = async () => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`,
+        Authorization: `Bearer ${localStorage.getItem("sessionToken")}`,
       },
     });
 
@@ -89,7 +89,7 @@ export const fetchUsers = async () => {
     console.error("Error en fetchUsers:", error);
     throw error;
   }
-}
+};
 
 export const createUser = async (user) => {
   const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/users`;
@@ -98,7 +98,7 @@ export const createUser = async (user) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`,
+        Authorization: `Bearer ${localStorage.getItem("sessionToken")}`,
       },
       body: JSON.stringify(user),
     });
@@ -114,7 +114,7 @@ export const createUser = async (user) => {
     console.error("Error en createUser:", error);
     throw error;
   }
-}
+};
 
 export const updateUser = async (user) => {
   const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/users/${user.id}`;
@@ -123,7 +123,7 @@ export const updateUser = async (user) => {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`,
+        Authorization: `Bearer ${localStorage.getItem("sessionToken")}`,
       },
       body: JSON.stringify(user),
     });
@@ -139,4 +139,4 @@ export const updateUser = async (user) => {
     console.error("Error en updateUser:", error);
     throw error;
   }
-}
+};
