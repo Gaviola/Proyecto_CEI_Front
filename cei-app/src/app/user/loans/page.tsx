@@ -56,7 +56,7 @@ export default function LoansPage() {
     };
 
     return (
-        <div className="sm:m-10 m-5 h-screen overflow-x-hidden">
+        <div className="sm:m-10 m-5 h-screen overflow-x-hidden w-full">
             <h1 className="text-4xl font-bold py-4">Inventario</h1>
             <NewUserLoanModal item={selectedItem} onClose={onClose} onOpen={onOpen} onOpenChange={onOpenChange} isOpen={isOpen} fetchItems={fetchItems} />
             <div className="gap-2 sm:gap-2 md:gap-3  grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 sm:max-h-[60vh]   ">

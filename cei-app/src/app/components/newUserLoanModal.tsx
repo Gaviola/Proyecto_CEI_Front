@@ -13,7 +13,8 @@ import { Item } from "../user/loans/page";
 import { itemsData } from "@/data/inventory";
 import { ItemCard } from "../admin/inventory/page";
 import { createUserLoan } from "@/services/loans";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 type ItemDisplay = {
     name: string;
@@ -37,30 +38,25 @@ export default function NewUserLoanModal({
 }) {
     const [formData, setFormData] = useState<ItemDisplay>({
         name: item?.item_type || "",
-        price: itemsData.find((data: ItemCard) => data.id == item?.id)?.price,
+        price: item?.price,
     });
 
 
-    const updateItem = useCallback(() => {
-        if (item) {
-            const itemDisplayData = {
-                name: item.item_type,
-                price: item.price,
-            };
-            setFormData(itemDisplayData);
-            onOpen();
-        }
-    }, [item, onOpen]);
-
     useEffect(() => {
-        updateItem();
-    }, [item, updateItem]);
+        setFormData({
+            name: item?.item_type || "",
+            price: item?.price,
+        });
+    }, [item]);
 
 
     const onPressCreateLoan = async () => {
         try {
-            await createUserLoan(formData);
+            await createUserLoan({
+                itemType: item?.id,
+            });
             fetchItems();
+            toast.success("Prestamo solicitado");
             onClose();
         }
         catch (error) {
@@ -70,6 +66,7 @@ export default function NewUserLoanModal({
 
     return (
         <>
+            <ToastContainer />
             <Modal
                 isOpen={isOpen}
                 onOpenChange={onOpenChange}
