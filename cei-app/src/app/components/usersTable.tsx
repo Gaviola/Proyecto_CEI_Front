@@ -16,8 +16,8 @@ import { Selection } from "@react-types/shared";
 const columns = [
   { key: "name", label: "Nombre" },
   { key: "lastname", label: "Apellido" },
+  { key: "dni", label: "DNI" },
   { key: "email", label: "Email" },
-  { key: "idNumber", label: "DNI" },
 ];
 
 export default function UsersTable({ users, isLoading, onSelectionChange }: { users: User[], isLoading: boolean, onSelectionChange: (keys: Selection) => void }) {
@@ -49,12 +49,17 @@ export default function UsersTable({ users, isLoading, onSelectionChange }: { us
               classNames={{}}
             />
           </div>
-        }
+        } 
         isHeaderSticky
         selectionMode="single"
         defaultSelectedKeys={["2"]}
         color="primary"
         onSelectionChange={onSelectionChange}
+        classNames={
+          {
+            base: "",
+          }
+        }
       >
         <TableHeader columns={columns}>
           {(column) => (
@@ -67,7 +72,7 @@ export default function UsersTable({ users, isLoading, onSelectionChange }: { us
           loadingContent={<Spinner color="current" />}
         >
           {(item) => (
-            <TableRow key={item.idNumber}>
+            <TableRow key={item.id}>
               {(columnKey) => (
                 <TableCell> {getKeyValue(item, columnKey)} </TableCell>
               )}

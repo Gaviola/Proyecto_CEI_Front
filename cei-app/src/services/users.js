@@ -59,10 +59,84 @@ export const getUserByID = async (id) => {
     }
 
     const user = await response.json();
-    console.log("getUserByID", user);
     return user;
   } catch (error) {
     console.error("Error en getUserByID:", error);
     throw error;
   }
 };
+
+export const fetchUsers = async () => {
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/users`;
+  try {
+    const response = await fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error al obtener los usuarios: ${errorText}`);
+    }
+
+    const users = await response.json();
+
+    return users;
+  } catch (error) {
+    console.error("Error en fetchUsers:", error);
+    throw error;
+  }
+}
+
+export const createUser = async (user) => {
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/users`;
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`,
+      },
+      body: JSON.stringify(user),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error al crear el usuario: ${errorText}`);
+    }
+
+    const createdUser = await response.json();
+    return createdUser;
+  } catch (error) {
+    console.error("Error en createUser:", error);
+    throw error;
+  }
+}
+
+export const updateUser = async (user) => {
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/users/${user.id}`;
+  try {
+    const response = await fetch(apiUrl, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`,
+      },
+      body: JSON.stringify(user),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error al actualizar el usuario: ${errorText}`);
+    }
+
+    const updatedUser = await response.json();
+    return updatedUser;
+  } catch (error) {
+    console.error("Error en updateUser:", error);
+    throw error;
+  }
+}
