@@ -116,7 +116,7 @@ export default function InventoryPage() {
             <CardFooter className="text-small justify-between">
               <b className="">{item.name}</b>
               <p className="text-default-500">{`${
-                numItems.find((data) => data.id == item.id)?.number
+                numItems.find((data) => data.id == item.id)?.number || 0
               }`}</p>
             </CardFooter>
           </Card>

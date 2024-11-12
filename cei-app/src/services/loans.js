@@ -55,7 +55,7 @@ export const saveLoanItem = async (loanItemData) => {
 };
 
 export const fetchLoans = async () => {
-  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/loans`;
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/loans/withItemType`;
   try {
     const res = await fetch(apiUrl, {
       method: "GET",
