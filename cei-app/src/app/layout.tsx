@@ -17,14 +17,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
-      <body className={`${inter.className} min-h-screen sm:overflow-y-hidden`}>
+    <html lang="en">
+      <body className={`${inter.className} max-h-screen overflow-hidden`}>
         {<Header />}
-        <div className="flex flex-row w-screen ">
-          <div className=" sm:block hidden ">{<Navbar />}</div>
-          <div className="">
-            {children}
-          </div>
+        <div className="flex flex-row w-screen">
+          <div className=" sm:block hidden">{<Navbar />}</div>
+          {children}
         </div>
       </body>
     </html>

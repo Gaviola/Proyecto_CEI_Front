@@ -3,132 +3,93 @@
 import { Card, CardBody, CardFooter } from "@nextui-org/card";
 import { Image } from "@nextui-org/image";
 import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   useDisclosure,
 } from "@nextui-org/modal";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { useEffect, useState } from "react";
+import { getEveryItemType } from "@/services/inventory";
+import { itemsData } from "@/data/inventory";
+import InventoryModal from "@/app/components/inventoryModal";
+
+export type Item = {
+  id: number;
+  name: string;
+  is_generic: boolean;
+};
+
+export type ItemCard = {
+  id: number;
+  name: string;
+  img: string;
+  price: number;
+}
+
 
 export default function InventoryPage() {
-  const list = [
-    {
-      title: "Set Mate",
-      img: "/mate-termo.jpg",
-      price: "$5.50",
-    },
-    {
-      title: "Lockers",
-      img: "",
-      price: "$3.00",
-    },
-    {
-      title: "Cargador",
-      img: "",
-      price: "$10.00",
-    },
-    {
-      title: "Cartas",
-      img: "",
-      price: "$5.30",
-    },
-    {
-      title: "Tablero",
-      img: "",
-      price: "$15.70",
-    },
-    {
-      title: "Zapatilla",
-      img: "",
-      price: "$15.70",
-    },
-    {
-      title: "Fotocopia",
-      img: "",
-      price: "$15.70",
-    },
-    {
-      title: "Juego",
-      img: "",
-      price: "$15.70",
-    },
-    {
-      title: "Ping Pong",
-      img: "",
-      price: "$15.70",
-    },
-  ];
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+  const [itemsList, setItemsList] = useState<Item[]>([]);
+  const [itemsCard, setItemsCard] = useState<ItemCard []>([]);
+  const [selectedItem, setSelectedItem] = useState<Item>();
 
   // const [formData, setFormData] = useState({
-  //   title: 
+  //   title:
   // })
 
-  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+  const fetchItems = async () => {
+    const items = await getEveryItemType();
+    console.log(items);
+    const formatedItems = items.map((item: Item) => ({
+      id: item.id,
+      name: item.name,
+      img: itemsData.find((data:ItemCard) => data.id == item.id)?.img,
+      price: itemsData.find((data:ItemCard) => data.id == item.id)?.price,
+    }));
+    setItemsList(items);
+    setItemsCard(formatedItems);
+  };
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
+  const handleSelect = (item:ItemCard) => {
+    const selectedItem = itemsList.find((i) => i.id == item.id);
+    setSelectedItem(selectedItem);
+    onOpen();
+    console.log('Selected item:', selectedItem);
+  };
+
+  
 
   return (
-    <div className="min-h-screen">
-      <h1 className="text-4xl font-bold m-10">Inventario</h1>
-      {/* <Modal
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
-        scrollBehavior={"inside"}
-        placement="center"
-        classNames={{
-          base: "w-[80%] max-h-[80%] ",
-        }}
-      >
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader>
-                {"Modificar Elemento"}
-              </ModalHeader>
-              <ModalBody>
-                <Input
-                  label="Nombre Alumno/Prestatario"
-                  placeholder="Nombre Alumno/Prestatario"
-                  value={formData.borrowerName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, borrowerName: e.target.value })
-                  }
-                />
-
-              </ModalBody>
-              <ModalFooter>
-                <Button onPress={handleSaveLoan}>Guardar</Button>
-                <Button color="danger" variant="flat" onPress={onClose}>
-                  Cerrar
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal> */}
-      <div className="gap-2 sm:gap-2 md:gap-3  grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 sm:max-h-[60vh]  m-10 ">
-        {list.map((item, index) => (
+    <div className="sm:m-10 m-5 h-screen overflow-x-hidden">
+      <h1 className="text-4xl font-bold py-4">Inventario</h1>
+      <InventoryModal item={selectedItem} onClose={onClose} onOpen={onOpen} onOpenChange={onOpenChange} isOpen={isOpen} fetchItems={fetchItems} /> 
+      <div className="gap-2 sm:gap-2 md:gap-3  grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 sm:max-h-[60vh]   ">
+        {itemsCard.map((item, index) => (
           <Card
             shadow="sm"
             key={index}
             isPressable
-            onPress={() => console.log("item pressed")}
+            onPress={() => handleSelect(item)}
+            classNames={{
+              base: "",
+            }}
           >
             <CardBody className="overflow-visible p-0">
               <Image
                 shadow="sm"
                 radius="lg"
                 width="100%"
-                alt={item.title}
+                alt={item.name}
                 className="w-full object-cover h-[140px]"
                 src={item.img}
               />
             </CardBody>
             <CardFooter className="text-small justify-between">
-              <b>{item.title}</b>
-              <p className="text-default-500">{item.price}</p>
+              <b>{item.name}</b>
+              <p className="text-default-500">{`$${item.price}`}</p>
             </CardFooter>
           </Card>
         ))}
