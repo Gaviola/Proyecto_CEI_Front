@@ -159,7 +159,7 @@ export const deleteItemType = async (itemTypeID) => {
 };
 
 export const getItemsForUser = async () => {
-  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/user/getItems`;
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/user/getItemTypes`;
   try {
     const response = await fetch(apiUrl, {
       method: "GET",

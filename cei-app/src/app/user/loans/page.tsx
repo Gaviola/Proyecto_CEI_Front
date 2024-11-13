@@ -12,7 +12,7 @@ import NewUserLoanModal from "@/app/components/newUserLoanModal";
 
 export type Item = {
     id: number;
-    item_type: string;
+    name: string;
     is_generic: boolean;
     img: string;
     price: number;
@@ -37,7 +37,7 @@ export default function LoansPage() {
         console.log(items);
         const formatedItems = items.map((item: Item) => ({
             id: item.id,
-            name: item.item_type,
+            name: item.name,
             img: itemsData.find((data: ItemCard) => data.id == item.id)?.img,
             price: item.price,
         }));

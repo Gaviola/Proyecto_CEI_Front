@@ -179,7 +179,7 @@ export default function LoanModal({
       try {
         const user = await getUserByEmail(formData.email);
 
-        if (user.dni !== 0) {
+        if (user.id !== 0) {
           const sendData: SendDataFormat = {
             id: user.id,
             deliveryDate: formData.deliveryDate,

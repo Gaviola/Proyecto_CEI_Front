@@ -111,11 +111,7 @@ export default function LoansPage() {
   };
 
   useEffect(() => {
-    if (hasMounted.current) {
-      searchLoans(searchContent);
-    } else {
-      hasMounted.current = true;
-    }
+    searchLoans(searchContent);
   }, [searchContent]);
 
   const handleSelectedKey = (key: Selection) => {
@@ -140,6 +136,7 @@ export default function LoansPage() {
       data.map((loan: Loan) => formatItem(loan))
     );
     setLoansTable(formattedLoans);
+    setFilteredLoans(formattedLoans); // Inicializa filteredLoans con los préstamos formateados
   };
 
   const fetchItems = async () => {

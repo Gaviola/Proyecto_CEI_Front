@@ -37,14 +37,14 @@ export default function NewUserLoanModal({
     fetchItems: () => void;
 }) {
     const [formData, setFormData] = useState<ItemDisplay>({
-        name: item?.item_type || "",
+        name: item?.name || "",
         price: item?.price,
     });
 
 
     useEffect(() => {
         setFormData({
-            name: item?.item_type || "",
+            name: item?.name || "",
             price: item?.price,
         });
     }, [item]);
