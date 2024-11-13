@@ -109,7 +109,6 @@ export default function LoansPage() {
     const formattedLoans = await Promise.all(
       data.map((loan: Loan) => formatItem(loan))
     );
-    console.log("formattedLoans:", formattedLoans);
     setLoansTable(formattedLoans);
   };
 
@@ -117,7 +116,6 @@ export default function LoansPage() {
   const fetchItems = async () => {
     try {
       const items = await getEveryItemType();
-      console.log("items fetched:", items);
       setLoanItems(items);
     } catch (error) {
       console.error("Error fetching items:", error);
@@ -165,19 +163,17 @@ export default function LoansPage() {
     const userData: User = await getUserByID(item.borrowerName);
     const deliveryResponsible: User = await getUserByID(item.deliveryResponsible);
 
-    const borrowerName = (userData?.name || "") + " " + (userData?.lastName || "");
+    const borrowerName = (userData?.name || "") + " " + (userData?.lastname || "");
 
     const borrowedItem = loanItems.find((i) => i.id === item.itemType);
-    console.log("items dentro de formatItem:", loanItems);
-    console.log("borrowedItem:", item.itemType);
 
     const formattedItem = {
       id: item?.id || 0,
       borrowerName: borrowerName || "",
-      legajo: userData?.legajo || "",
+      legajo: userData?.student_id || "",
       email: userData?.email || "",
       phone: userData?.phone || 0,
-      itemType: item?.itemType || 0,
+      itemType: item?.itemType || "",
       deliveryDate: formatDate(item?.deliveryDate) || "",
       returnDate: formatDate(item?.returnDate) || "",
       //endingDate: formatDate(item.endingDate),

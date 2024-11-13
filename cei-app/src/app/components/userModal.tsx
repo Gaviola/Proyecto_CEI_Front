@@ -134,7 +134,7 @@ export default function UserModal({
       >
         <ModalContent>
           <ModalHeader>
-            {user ? "Modificar Préstamo" : "Nuevo Préstamo"}
+            {formData.id != 0 ? "Modificar Usuario" : "Nuevo Usuario"}
           </ModalHeader>
           <ModalBody>
             <Input

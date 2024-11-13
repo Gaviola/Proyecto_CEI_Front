@@ -14,6 +14,7 @@ export const saveLoan = async (loanData) => {
 
     if (!response.ok) {
       const errorMessage = await response.text();
+      alert(errorMessage);
       throw new Error(`Error al guardar el préstamo: ${errorMessage}`);
     }
 
@@ -55,7 +56,7 @@ export const saveLoanItem = async (loanItemData) => {
 };
 
 export const fetchLoans = async () => {
-  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/loans`;
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/loans/withItemType`;
   try {
     const res = await fetch(apiUrl, {
       method: "GET",

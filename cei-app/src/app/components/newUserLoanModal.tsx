@@ -86,11 +86,6 @@ export default function NewUserLoanModal({
                             value={formData.name}
                             disabled
                         />
-                        <Input
-                            label="Precio"
-                            value={formData.price?.toString()}
-                            disabled
-                        />
                     </ModalBody>
                     <ModalFooter>
                         <Button color="primary" variant="flat" onPress={onPressCreateLoan}>

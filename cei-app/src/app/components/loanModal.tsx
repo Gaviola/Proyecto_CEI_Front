@@ -20,6 +20,7 @@ import { getUserByEmail } from "../../services/users";
 import { getEveryItemType, getItemsByType } from "../../services/inventory";
 import { CheckboxGroup, Checkbox } from "@nextui-org/checkbox";
 import { CustomCheckbox } from "./customCheckbox";
+import { useMemo } from "react";
 import {
   Select,
   SelectSection,
@@ -120,13 +121,13 @@ export default function LoanModal({
       id: 0,
       deliveryDate: {
         String: "2000-01-01",
-        Valid: false,
+        Valid: true,
       },
       deliveryResponsible: 1,
       borrowedItem: 0,
       returnDate: {
         String: "2000-01-01",
-        Valid: false,
+        Valid: true,
       },
       amount: 0,
       paymentMethod: {
@@ -174,50 +175,54 @@ export default function LoanModal({
   };
 
   const handleSaveLoan = async () => {
-    try {
-      const user = await getUserByEmail(formData.email);
+    while (!isInvalidEmail && !isInvalidItem) {
+      try {
+        const user = await getUserByEmail(formData.email);
 
-      if (user.dni !== 0) {
-        const sendData: SendDataFormat = {
-          id: formData.id,
-          deliveryDate: formData.deliveryDate,
-          returnDate: formData.returnDate,
-          endingDate: formData.returnDate,
-          deliveryResponsible: formData.deliveryResponsible,
-          borrowerName: user.id,
-          observation: formData.observation,
-          amount: formData.amount,
-          paymentMethod: formData.paymentMethod,
-          status: formData.status,
-          itemType: formData.borrowedItem,
-        };
+        if (user.dni !== 0) {
+          const sendData: SendDataFormat = {
+            id: user.id,
+            deliveryDate: formData.deliveryDate,
+            returnDate: formData.returnDate,
+            endingDate: formData.returnDate,
+            deliveryResponsible: formData.deliveryResponsible,
+            borrowerName: user.id,
+            observation: formData.observation,
+            amount: formData.amount,
+            paymentMethod: formData.paymentMethod,
+            status: formData.status,
+            itemType: formData.borrowedItem,
+          };
 
-        const savedLoanID = await saveLoan(sendData);
+          const savedLoanID = await saveLoan(sendData);
 
-        console.log("Préstamo guardado:", savedLoanID);
+          console.log("Préstamo guardado:", savedLoanID);
 
-        if (formData.email === "") {
-          setLoans([...loans, savedLoanID]);
+          if (formData.email === "") {
+            setLoans([...loans, savedLoanID]);
+          } else {
+            const updatedLoans = loans.map((l) =>
+              l.id === savedLoanID.id ? savedLoanID : l
+            );
+            setLoans(updatedLoans);
+          }
+          fetchAndFormatLoans();
         } else {
-          const updatedLoans = loans.map((l) =>
-            l.id === savedLoanID.id ? savedLoanID : l
-          );
-          setLoans(updatedLoans);
+          // Mostrar mensaje al usuario de que no se encontró el email
+          setError("No se encontró un usuario con ese email.");
+          alert("No se encontró un usuario con ese email.");
         }
-        fetchAndFormatLoans();
-      } else {
-        // Mostrar mensaje al usuario de que no se encontró el email
-        setError("No se encontró un usuario con ese email.");
-        alert("No se encontró un usuario con ese email.");
-      }
 
-      onClose();
-    } catch (error) {
-      console.error("Error saving loan:", error);
-      setError(
-        "Hubo un problema al guardar el préstamo. Por favor, inténtalo de nuevo."
-      );
+        onClose();
+      } catch (error) {
+        console.error("Error saving loan:", error);
+        setError(
+          "Hubo un problema al guardar el préstamo. Por favor, inténtalo de nuevo."
+        );
+      }
+      return
     }
+
   };
 
   const handleUpdateLoan = async () => {
@@ -231,26 +236,25 @@ export default function LoanModal({
         amount: formData.amount,
         paymentMethod: formData.paymentMethod,
         itemType: formData.borrowedItem,
-      }
+      };
       await updateLoan(updatedLoan);
       fetchAndFormatLoans();
     }
-    
+
     onClose();
-  }
+  };
 
   const handleFinalizeLoan = async () => {
     if (loan) {
       const updatedLoan = {
         ...loan,
-        status: "Finalizado",
+        status: "Finished",
         endingDate: { String: new Date().toISOString(), Valid: true },
       };
       await updateLoan(updatedLoan);
       fetchAndFormatLoans();
     }
 
-    
     onClose();
   };
 
@@ -272,6 +276,17 @@ export default function LoanModal({
     return "-";
   };
 
+  const validateEmail = (value:string) => value.match(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+.[A-Z]{2,4}$/i);
+
+  const isInvalidEmail = useMemo(() => {
+    if (formData.email === "") return false;
+
+    return validateEmail(formData.email) ? false : true;
+  }, [formData.email]);
+
+  const isInvalidItem = useMemo(() => {
+    return formData.borrowedItem === 0;
+  }, [formData.borrowedItem]);
 
 
   return (
@@ -304,22 +319,32 @@ export default function LoanModal({
           {(onClose) => (
             <>
               <ModalHeader>
-                {loan ? "Modificar Préstamo" : "Nuevo Préstamo"}
+                {formData.id !== 0 ? "Modificar Préstamo" : "Nuevo Préstamo"}
               </ModalHeader>
               <ModalBody>
-                <Input
+                {formData?.id == 0 && (
+                  <Input
                   label="Email"
                   type="email"
+                  isInvalid={isInvalidEmail}
+                  errorMessage="Por favor, ingrese un email correcto."
+                  color={isInvalidEmail ? "danger" : "default"}
                   value={formData.email}
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
                 />
-
-                <div className="h-5 mb-9 w-full">
+                )}
+                <div className="h-5 mb-12 w-full">
                   <Select
                     label="Seleccioná un item"
                     items={items}
+                    isInvalid={isInvalidItem}
+                    errorMessage="Por favor, seleccioná un item."
+                    color={isInvalidItem ? "danger" : "default"}
+                    classNames={{
+                      errorMessage: "",
+                    }}
                     onChange={(e) => {
                       setSelectedItem(e.target.value);
                       setFormData({
@@ -334,7 +359,6 @@ export default function LoanModal({
                       </SelectItem>
                     )}
                   </Select>
-                  {/* {item.name} */}
                 </div>
 
                 <DateInput
@@ -392,10 +416,14 @@ export default function LoanModal({
               </ModalBody>
               <ModalFooter>
                 {/* {error && <p className="text-red-500">{error}</p>} */}
-                {formData?.id === 0 && ( 
-                <Button color="primary" variant="flat" onPress={handleSaveLoan}>
-                  Guardar
-                </Button>
+                {formData?.id === 0 && (
+                  <Button
+                    color="primary"
+                    variant="flat"
+                    onPress={handleSaveLoan}
+                  >
+                    Guardar
+                  </Button>
                 )}
                 {formData?.id !== 0 && (
                   <Button
@@ -408,7 +436,8 @@ export default function LoanModal({
                 )}
                 {formData?.id !== 0 && (
                   <Button
-                    color="primary" variant="flat"
+                    color="primary"
+                    variant="flat"
                     onPress={handleUpdateLoan}
                   >
                     Actualizar
