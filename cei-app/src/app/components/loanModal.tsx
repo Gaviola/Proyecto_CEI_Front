@@ -293,7 +293,7 @@ export default function LoanModal({
     <>
       <Button
         color="default"
-        className="border-primaryGreen-500 bg-primaryGreen-500 text-white mr-4 mb-4"
+        className="border-primaryGreen-500 bg-primaryGreen-500 text-white mr-4 mb-4 "
         onPress={onPressNewLoan}
       >
         Nuevo Préstamo

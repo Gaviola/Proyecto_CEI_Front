@@ -78,8 +78,8 @@ export default function UsersPage() {
   };
 
   return (
-    <main className="py-5 px-7 w-full">
-      <h1 className="text-2xl font-bold text-gray-900 m-2">Usuarios</h1>
+    <main className="sm:m-10 m-5 w-full">
+      <h1 className="text-4xl font-bold py-4">Usuarios</h1>
 
       {/* TODO: Search bar */}
       {/* TODO: Pagination */}

@@ -35,7 +35,7 @@ export default function UsersTable({ users, isLoading, onSelectionChange }: { us
   return (
     <>
       <Table
-        aria-label="Loans Table"
+        aria-label="Users Table"
         bottomContent={
           <div className="flex w-full justify-center">
             <Pagination

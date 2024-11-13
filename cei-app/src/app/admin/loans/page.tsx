@@ -21,6 +21,8 @@ import { getUserByID } from "@/services/users";
 import { User } from "../users/page";
 import { get } from "lodash";
 import { getItemsByType, getEveryItemType } from "@/services/inventory";
+import InputSearcher from "@/app/components/inputSearcher";
+import { debounce, set } from "lodash";
 
 type ValidString = {
   String: string;
@@ -86,7 +88,35 @@ export default function LoansPage() {
   const rowsPerPage = 10;
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
   const [loansTable, setLoansTable] = useState<TableLoan[]>([]);
-  const [loanItems, setLoanItems] = useState<{ id: number; name: string; isGeneric: boolean }[]>([]);
+  const [loanItems, setLoanItems] = useState<
+    { id: number; name: string; isGeneric: boolean }[]
+  >([]);
+  const [searchContent, setSearchContent] = useState("");
+  const [filteredLoans, setFilteredLoans] = useState<TableLoan[]>([]);
+  const hasMounted = React.useRef(false);
+
+  const searchLoans = (searchContent: string) => {
+    
+    debounce(() => {
+      const filtered = loansTable.filter(
+        (loan) =>
+          (loan.borrowerName &&
+            loan.borrowerName.toLowerCase().includes(searchContent.toLowerCase())) ||
+          (loan.email &&
+            loan.email.toLowerCase().includes(searchContent.toLowerCase()))
+      );
+      setFilteredLoans(filtered);
+      
+    }, 100)();
+  };
+
+  useEffect(() => {
+    if (hasMounted.current) {
+      searchLoans(searchContent);
+    } else {
+      hasMounted.current = true;
+    }
+  }, [searchContent]);
 
   const handleSelectedKey = (key: Selection) => {
     if (key === "all") {
@@ -111,7 +141,6 @@ export default function LoansPage() {
     );
     setLoansTable(formattedLoans);
   };
-
 
   const fetchItems = async () => {
     try {
@@ -139,8 +168,8 @@ export default function LoansPage() {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
 
-    return loansTable.slice(start, end);
-  }, [page, loansTable]);
+    return filteredLoans.slice(start, end);
+  }, [page, filteredLoans]);
 
   interface FormattedItem {
     [key: string]: any;
@@ -152,8 +181,9 @@ export default function LoansPage() {
       const parsedDate = parseDate(isoDate); // Analiza solo la fecha
       const formatedDate = `${parsedDate.day
         .toString()
-        .padStart(2, "0")}/${parsedDate.month.toString().padStart(2, "0")}/${parsedDate.year
-        }`;
+        .padStart(2, "0")}/${parsedDate.month.toString().padStart(2, "0")}/${
+        parsedDate.year
+      }`;
       return formatedDate;
     }
     return "-";
@@ -161,9 +191,12 @@ export default function LoansPage() {
 
   const formatItem = async (item: Loan): Promise<TableLoan> => {
     const userData: User = await getUserByID(item.borrowerName);
-    const deliveryResponsible: User = await getUserByID(item.deliveryResponsible);
+    const deliveryResponsible: User = await getUserByID(
+      item.deliveryResponsible
+    );
 
-    const borrowerName = (userData?.name || "") + " " + (userData?.lastname || "");
+    const borrowerName =
+      (userData?.name || "") + " " + (userData?.lastname || "");
 
     const borrowedItem = loanItems.find((i) => i.id === item.itemType);
 
@@ -190,7 +223,17 @@ export default function LoansPage() {
   return (
     <div className="sm:m-10 m-5 h-screen overflow-x-hidden">
       <h1 className="text-4xl font-bold py-4">Préstamos</h1>
-      <div className="flex flex-row">
+      <div className="flex flex-row  ">
+
+        <div className="align-top">
+          <InputSearcher
+          onChange={debounce(setSearchContent, 300)}
+          onEnter={setSearchContent}
+          placeholder="Filtrar préstamo"
+        />
+        </div>
+        
+
         <LoanModal
           loan={selectedLoan}
           loans={loans}

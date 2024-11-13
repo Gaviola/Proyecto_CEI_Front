@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@nextui-org/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LuUsers } from "react-icons/lu";
 import { MdOutlineInventory, MdOutlineShoppingCart } from "react-icons/md";
 
@@ -8,15 +8,26 @@ export default function Navbar() {
   const optionStyle =
     "relative p-6 transform hover:translate-x-4 hover:bg-background-200 active:bg-background-100  duration-500 group-focus:text-red text-black flex flex-row justify-center items-center gap-4 rounded-lg ";
 
-  const [selectedOption, setSelectedOption] = useState("Usuarios");
+  const [selectedOption, setSelectedOption] = useState("");
+
+  useEffect(() => {
+    const savedOption = localStorage.getItem("selectedOption");
+    if (savedOption) {
+      setSelectedOption(savedOption);
+    }
+  }, []);
 
   const handleOptionClick = (option: string) => {
     setSelectedOption(option);
+    localStorage.setItem("selectedOption", option);
   };
 
   const buttonStyle = "w-6 h-[4px] bg-black rounded-md";
 
   const [isOpen, setIsOpen] = useState(false);
+
+  //Actualiza el valor de selectedOption en base a la ruta actual
+  
 
   return (
     <nav
@@ -33,27 +44,28 @@ export default function Navbar() {
           <div className={buttonStyle}></div>
           <div className={buttonStyle}></div>
         </button>
+
         <li
           className={`${optionStyle} ${
-            selectedOption === "Usuarios" ? "text-primaryGreen-500" : ""
+            selectedOption === "Prestamos" ? "text-primaryGreen-500" : ""
           }`}
-          onClick={() => handleOptionClick("Usuarios")}
+          onClick={() => handleOptionClick("Prestamos")}
         >
-          <a href="/admin/users" className="">
-            <LuUsers className="size-8" />
+          <a href="/admin/loans">
+            <MdOutlineShoppingCart className="size-8" />
           </a>
-
           <a
-            href="/admin/users"
+            href="/admin/loans"
             className={
               isOpen
                 ? "block transform translate-x-0 duration-500"
                 : "transform -translate-x-96 duration-500 w-0 hidden"
             }
           >
-            <div className="">Usuarios</div>
+            Préstamos
           </a>
         </li>
+
         <li
           className={`${optionStyle} ${
             selectedOption === "Inventario" ? "text-primaryGreen-500" : ""
@@ -75,24 +87,26 @@ export default function Navbar() {
             Inventario
           </a>
         </li>
+
         <li
           className={`${optionStyle} ${
-            selectedOption === "Prestamos" ? "text-primaryGreen-500" : ""
+            selectedOption === "Usuarios" ? "text-primaryGreen-500" : ""
           }`}
-          onClick={() => handleOptionClick("Prestamos")}
+          onClick={() => handleOptionClick("Usuarios")}
         >
-          <a href="/admin/loans">
-            <MdOutlineShoppingCart className="size-8" />
+          <a href="/admin/users" className="">
+            <LuUsers className="size-8" />
           </a>
+
           <a
-            href="/admin/loans"
+            href="/admin/users"
             className={
               isOpen
                 ? "block transform translate-x-0 duration-500"
                 : "transform -translate-x-96 duration-500 w-0 hidden"
             }
           >
-            Préstamos
+            <div className="">Usuarios</div>
           </a>
         </li>
       </ul>
