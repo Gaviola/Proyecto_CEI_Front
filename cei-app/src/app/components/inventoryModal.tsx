@@ -126,13 +126,6 @@ export default function InventoryModal({
                 setFormData({ ...formData, name: e.target.value })
               }
             />
-            <Input
-              label="Precio"
-              value={formData.price?.toString()}
-              onChange={(e) =>
-                setFormData({ ...formData, price: Number(e.target.value) })
-              }
-            />
           </ModalBody>
           <ModalFooter>
             {formData?.name == "" && (

@@ -14,6 +14,7 @@ export const saveLoan = async (loanData) => {
 
     if (!response.ok) {
       const errorMessage = await response.text();
+      alert(errorMessage);
       throw new Error(`Error al guardar el préstamo: ${errorMessage}`);
     }
 
